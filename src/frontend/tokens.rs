@@ -1,21 +1,55 @@
 use std::fmt::{Display, Formatter};
+use TokenType::*;
 
 pub enum TokenType {
     LeftParen,
     RightParen,
     LeftBrace,
     RightBrace,
+    Comma,
+    Dot,
+    Minus,
+    Plus,
+    Semicolon,
+    Slash,
+    Star,
     Eof,
+}
+
+impl TokenType {
+    pub fn get_single_char_token_type(ch: char) -> Option<TokenType> {
+        match ch {
+            '(' => Some(LeftParen),
+            ')' => Some(RightParen),
+            '{' => Some(LeftBrace),
+            '}' => Some(RightBrace),
+            ',' => Some(Comma),
+            '.' => Some(Dot),
+            '+' => Some(Plus),
+            '-' => Some(Minus),
+            ';' => Some(Semicolon),
+            '/' => Some(Slash),
+            '*' => Some(Star),
+            _ => None
+        }
+    }
 }
 
 impl Display for TokenType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let text = match &self {  
-            TokenType::LeftParen => "LEFT_PAREN".to_string(),
-            TokenType::RightParen => "RIGHT_PAREN".to_string(),
-            TokenType::LeftBrace => "LEFT_BRACE".to_string(),
-            TokenType::RightBrace => "RIGHT_BRACE".to_string(),
-            TokenType::Eof => "EOF".to_string(),
+            LeftParen => "LEFT_PAREN".to_string(),
+            RightParen => "RIGHT_PAREN".to_string(),
+            LeftBrace => "LEFT_BRACE".to_string(),
+            RightBrace => "RIGHT_BRACE".to_string(),
+            Comma => "COMMA".to_string(),
+            Dot => "DOT".to_string(),
+            Minus => "MINUS".to_string(),
+            Plus => "PLUS".to_string(),
+            Semicolon => "SEMICOLON".to_string(),
+            Slash => "SLASH".to_string(),
+            Star => "STAR".to_string(),
+            Eof => "EOF".to_string(),
         };
         write!(f, "{}", text)
     }

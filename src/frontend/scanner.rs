@@ -45,12 +45,11 @@ impl Iterator for Scanner {
             return None;
         }
         let char = char.unwrap();
-        match char {
-            '(' => Some(self.create_token(TokenType::LeftParen, format!("{char}"))),
-            ')' => Some(self.create_token(TokenType::RightParen, format!("{char}"))),
-            '{' => Some(self.create_token(TokenType::LeftBrace, format!("{char}"))),
-            '}' => Some(self.create_token(TokenType::RightBrace, format!("{char}"))),
-            _ => None,
+
+        if let Some(token_type) = TokenType::get_single_char_token_type(char) {
+            return Some(self.create_token(token_type, format!("{char}")));
         }
+
+        None
     }
 }
