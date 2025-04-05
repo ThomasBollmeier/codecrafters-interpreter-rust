@@ -23,6 +23,7 @@ pub enum TokenType {
     Greater,
     GreaterEqual,
     Str,
+    Number,
     Eof,
 }
 
@@ -68,10 +69,18 @@ impl Display for TokenType {
             Greater => "GREATER".to_string(),
             GreaterEqual => "GREATER_EQUAL".to_string(),
             Str => "STRING".to_string(),
+            Number => "NUMBER".to_string(),
             Eof => "EOF".to_string(),
         };
         write!(f, "{}", text)
     }
+}
+
+#[derive(Debug)]
+pub enum Literal {
+    Null,
+    Str(String),
+    Number(f64),
 }
 
 #[derive(Debug)]
@@ -80,24 +89,32 @@ pub struct Token {
     pub line: usize,
     pub column: usize,
     pub lexeme: String,
+    pub literal: Literal,
 }
 
 impl Token {
-    pub fn new(token_type: TokenType, line: usize, column: usize, lexeme: String) -> Token {
+    pub fn new(token_type: TokenType, 
+               line: usize, 
+               column: usize, 
+               lexeme: String,
+               literal: Literal,
+    ) -> Token {
         Token {
             token_type,
             line,
             column,
             lexeme,
+            literal
         }
     }
 }
 
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let literal = match self.token_type {
-            Str => &self.lexeme[1..self.lexeme.len()-1],
-            _ => "null"
+        let literal = match &self.literal {
+            Literal::Str(s) => s,
+            Literal::Null => "null",
+            Literal::Number(x) => &format!("{x:?}"),
         };
         write!(f, "{} {} {}", self.token_type, self.lexeme, literal)
     }

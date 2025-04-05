@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use crate::frontend::stream::{BufferedStream, CharStream, Stream};
-use crate::frontend::tokens::{Token, TokenType};
+use crate::frontend::tokens::{Literal, Token, TokenType};
 
 pub struct Scanner {
     stream: BufferedStream<char, ()>,
@@ -55,6 +55,21 @@ impl Scanner {
         }
     }
 
+    fn scan_one_or_two_char_operator(&mut self, 
+        line: usize, 
+        column: usize,
+        ch: char, 
+        token_type_1: TokenType, 
+        token_type_2: TokenType) -> Result<Option<Token>, LexicalError> {
+        match self.stream.peek() {
+            Some('=') => {
+                self.advance()?;
+                Ok(Some(Token::new(token_type_2, line, column, format!("{}=", ch), Literal::Null)))
+            }
+            _ => Ok(Some(Token::new(token_type_1, line, column, format!("{ch}"), Literal::Null)))
+        }
+    }
+
     fn scan_string(&mut self, line: usize, column: usize) -> Result<Option<Token>, LexicalError> {
         let mut lexeme = String::from("\"");
         loop {
@@ -70,8 +85,39 @@ impl Scanner {
                     line))
             }
         }
-        Ok(Some(Token::new(TokenType::Str, line, column, lexeme)))
+        let s = lexeme[1..lexeme.len()-1].to_string();
+        Ok(Some(Token::new(TokenType::Str, line, column, lexeme, Literal::Str(s))))
     }
+    
+    fn scan_number(&mut self, 
+                   first_digit: char, 
+                   line: usize, 
+                   column: usize) -> Result<Option<Token>, LexicalError> {
+        let mut num_str = String::new();
+        num_str.push(first_digit);
+
+        let mut dot_encountered = false;
+        let mut last_char_opt: Option<char> = None;
+
+        while let Some(&next_char) = self.stream.peek() {
+            if next_char.is_ascii_digit() || (next_char == '.' && !dot_encountered) {
+                num_str.push(next_char);
+                last_char_opt = Some(next_char);
+                self.advance().expect("must not happen");
+                dot_encountered = next_char == '.';
+            } else {
+                break;
+            }
+        }
+
+        if let Some('.') = last_char_opt {
+            return Err(LexicalError::new("invalid number".to_string(), line));
+        }
+
+        let num = num_str.parse::<f64>().unwrap();
+
+        Ok(Some(Token::new(TokenType::Number, line, column, num_str, Literal::Number(num))))
+    } 
 }
 
 impl Stream<Token, LexicalError> for Scanner {
@@ -105,47 +151,16 @@ impl Stream<Token, LexicalError> for Scanner {
         }
         
         if let Some(token_type) = TokenType::get_single_char_token_type(char) {
-            return Ok(Some(Token::new(token_type, line, column, format!("{char}"))));
+            return Ok(Some(Token::new(token_type, line, column, format!("{char}"), Literal::Null)));
         }
 
         match char {
-            '=' => {
-                match self.stream.peek() {
-                    Some('=') => {
-                        self.advance()?;
-                        Ok(Some(Token::new(TokenType::EqualEqual, line, column, "==".to_string())))
-                    }
-                    _ => Ok(Some(Token::new(TokenType::Equal, line, column, "=".to_string())))
-                }
-            }
-            '!' => {
-                match self.stream.peek() {
-                    Some('=') => {
-                        self.advance()?;
-                        Ok(Some(Token::new(TokenType::BangEqual, line, column, "!=".to_string())))
-                    }
-                    _ => Ok(Some(Token::new(TokenType::Bang, line, column, "!".to_string())))
-                }
-            }
-            '<' => {
-                match self.stream.peek() {
-                    Some('=') => {
-                        self.advance()?;
-                        Ok(Some(Token::new(TokenType::LessEqual, line, column, "<=".to_string())))
-                    }
-                    _ => Ok(Some(Token::new(TokenType::Less, line, column, "<".to_string())))
-                }
-            }
-            '>' => {
-                match self.stream.peek() {
-                    Some('=') => {
-                        self.advance()?;
-                        Ok(Some(Token::new(TokenType::GreaterEqual, line, column, ">=".to_string())))
-                    }
-                    _ => Ok(Some(Token::new(TokenType::Greater, line, column, ">".to_string())))
-                }
-            }
+            '=' => self.scan_one_or_two_char_operator(line, column, char, TokenType::Equal, TokenType::EqualEqual),
+            '!' => self.scan_one_or_two_char_operator(line, column, char, TokenType::Bang, TokenType::BangEqual),
+            '<' => self.scan_one_or_two_char_operator(line, column, char, TokenType::Less, TokenType::LessEqual),
+            '>' => self.scan_one_or_two_char_operator(line, column, char, TokenType::Greater, TokenType::GreaterEqual),
             '"' => self.scan_string(line, column),
+            ch if ch.is_ascii_digit() => self.scan_number(ch, line, column), 
             _ => Err(LexicalError::new(
                 format!("Unexpected character: {}", char),
                 line)) 
