@@ -43,15 +43,56 @@ impl Scanner {
     fn create_token(&self, token_type: TokenType, lexeme: String) -> Token {
         Token::new(token_type, self.line, self.col, lexeme)
     }
+
+    fn skip_line_comment(&mut self) -> Result<(usize, Option<char>), LexicalError> {
+        loop {
+            let char_opt = self.advance()?;
+            match char_opt {
+                Some('\n') => {
+                    let line = self.line;
+                    let char_opt = self.advance()?;
+                    return Ok((line, char_opt));
+                }
+                Some(_) => {}
+                None => {
+                    return Ok((self.line, None));
+                }
+            }
+        }
+    }
 }
 
 impl Stream<Token, LexicalError> for Scanner {
     fn next(&mut self) -> Result<Option<Token>, LexicalError> {
-        let line = self.line;
-        let char = match self.advance()? {
-            Some(char) => char,
-            None => return Ok(None),
-        };
+        let mut line: usize;
+        let mut char: char;
+        loop {
+            line = self.line;
+            char = match self.advance()? {
+                Some(char) => char,
+                None => return Ok(None),
+            };
+            
+            if char.is_whitespace() {
+                continue;
+            } else if char == '/' {
+                let next_char = match self.stream.peek() {
+                    Some(next_char) => next_char,
+                    None => break,
+                };
+                if *next_char == '/' {
+                    let (line_after_comment, char_opt) = self.skip_line_comment()?;
+                    line = line_after_comment;
+                    char = match char_opt {
+                        Some(char) => char,
+                        None => return Ok(None),
+                    };
+                }
+                break;
+            } else {
+                break;
+            }
+        }
         
         if let Some(token_type) = TokenType::get_single_char_token_type(char) {
             return Ok(Some(self.create_token(token_type, format!("{char}"))));
