@@ -16,6 +16,8 @@ pub enum TokenType {
     Star,
     Equal,
     EqualEqual,
+    Bang,
+    BangEqual,
     Eof,
 }
 
@@ -54,6 +56,8 @@ impl Display for TokenType {
             Star => "STAR".to_string(),
             Equal => "EQUAL".to_string(),
             EqualEqual => "EQUAL_EQUAL".to_string(),
+            Bang => "BANG".to_string(),
+            BangEqual => "BANG_EQUAL".to_string(),
             Eof => "EOF".to_string(),
         };
         write!(f, "{}", text)
