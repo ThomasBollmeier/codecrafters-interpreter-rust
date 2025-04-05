@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use anyhow::anyhow;
 use crate::frontend::stream::{BufferedStream, CharStream, Stream};
 use crate::frontend::tokens::{Token, TokenType};
 
@@ -19,7 +18,7 @@ impl Scanner {
         }
     }
     
-    fn advance(&mut self) -> Result<Option<char>, Box<dyn Error>> {
+    fn advance(&mut self) -> Result<Option<char>, LexicalError> {
         match self.stream.advance() {
             Ok(next_char_opt) => {
                 match next_char_opt {
@@ -34,7 +33,10 @@ impl Scanner {
                 }
                 Ok(next_char_opt)
             }
-            Err(_) => Err(Box::from(anyhow!("Could not advance to next char")))
+            Err(_) => Err(LexicalError::new(
+                "Could not advance to next char".to_string(),
+                self.line
+            ))
         }
     }
     
@@ -46,24 +48,29 @@ impl Scanner {
 impl Stream<Token, LexicalError> for Scanner {
     fn next(&mut self) -> Result<Option<Token>, LexicalError> {
         let line = self.line;
-        let char = match self.advance() {
-            Ok(char_opt) => match char_opt {
-                Some(char) => char,
-                None => return Ok(None),
-            }
-            Err(err) => {
-                let message = format!("{err}");
-                return Err(LexicalError::new(message, line));
-            }
+        let char = match self.advance()? {
+            Some(char) => char,
+            None => return Ok(None),
         };
         
         if let Some(token_type) = TokenType::get_single_char_token_type(char) {
             return Ok(Some(self.create_token(token_type, format!("{char}"))));
         }
 
-        Err(LexicalError::new(
-            format!("Unexpected character: {}", char),
-            line))
+        match char {
+            '=' => {
+                match self.stream.peek() {
+                    Some('=') => {
+                        self.advance()?;
+                        Ok(Some(self.create_token(TokenType::EqualEqual, "==".to_string())))
+                    }
+                    _ => Ok(Some(self.create_token(TokenType::Equal, "=".to_string())))
+                }
+            }
+            _ => Err(LexicalError::new(
+                format!("Unexpected character: {}", char),
+                line)) 
+        }
     }
 }
 

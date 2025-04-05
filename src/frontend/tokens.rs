@@ -14,6 +14,8 @@ pub enum TokenType {
     Semicolon,
     Slash,
     Star,
+    Equal,
+    EqualEqual,
     Eof,
 }
 
@@ -50,6 +52,8 @@ impl Display for TokenType {
             Semicolon => "SEMICOLON".to_string(),
             Slash => "SLASH".to_string(),
             Star => "STAR".to_string(),
+            Equal => "EQUAL".to_string(),
+            EqualEqual => "EQUAL_EQUAL".to_string(),
             Eof => "EOF".to_string(),
         };
         write!(f, "{}", text)
