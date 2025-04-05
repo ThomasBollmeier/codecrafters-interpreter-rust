@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="CargoProjects">
-    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml">
-      <package file="$PROJECT_DIR$">
-        <enabledFeature name="default" />
-      </package>
-    </cargoProject>
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
@@ -16,6 +12,7 @@
       <change beforePath="$PROJECT_DIR$/src/frontend/scanner.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/scanner.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/frontend/stream.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/stream.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/frontend/tokens.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/tokens.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,27 +42,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Cargo.Test frontend::stream::tests::test_buffered_stream_advance.executor": "Run",
-    "Cargo.Test frontend::stream::tests::test_buffered_stream_peek.executor": "Run",
-    "Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many.executor": "Run",
-    "Cargo.Test stream::tests.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.rust.reset.selective.auto.import": "true",
-    "git-widget-placeholder": "master",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
-    "org.rust.first.attach.projects": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Cargo.Test frontend::stream::tests::test_buffered_stream_advance.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test frontend::stream::tests::test_buffered_stream_peek.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test stream::tests.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;language.rust.cargo.check&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
+  <component name="RsExternalLinterProjectSettings">
+    <option name="runOnTheFly" value="true" />
+    <option name="tool" value="Clippy" />
+  </component>
   <component name="RunManager" selected="Cargo.Test stream::tests">
     <configuration name="Run codecrafters-interpreter" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
       <option name="buildProfileId" value="dev" />
@@ -174,8 +176,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Cargo.Test stream::tests" />
-        <item itemvalue="Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many" />
         <item itemvalue="Cargo.Test frontend::stream::tests::test_buffered_stream_peek" />
+        <item itemvalue="Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many" />
         <item itemvalue="Cargo.Test frontend::stream::tests::test_buffered_stream_advance" />
       </list>
     </recent_temporary>
@@ -183,6 +185,7 @@
   <component name="RustProjectSettings">
     <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="" />
@@ -192,10 +195,19 @@
       <updated>1743533552219</updated>
       <workItem from="1743533564740" duration="3666000" />
       <workItem from="1743620920604" duration="2672000" />
+      <workItem from="1743802361320" duration="251000" />
+      <workItem from="1743802678901" duration="728000" />
+      <workItem from="1743836171044" duration="597000" />
+      <workItem from="1743841167889" duration="2352000" />
+      <workItem from="1743848041396" duration="2628000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
