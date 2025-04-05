@@ -76,6 +76,24 @@ impl Stream<Token, LexicalError> for Scanner {
                     _ => Ok(Some(self.create_token(TokenType::Bang, "!".to_string())))
                 }
             }
+            '<' => {
+                match self.stream.peek() {
+                    Some('=') => {
+                        self.advance()?;
+                        Ok(Some(self.create_token(TokenType::LessEqual, "<=".to_string())))
+                    }
+                    _ => Ok(Some(self.create_token(TokenType::Less, "<".to_string())))
+                }
+            }
+            '>' => {
+                match self.stream.peek() {
+                    Some('=') => {
+                        self.advance()?;
+                        Ok(Some(self.create_token(TokenType::GreaterEqual, ">=".to_string())))
+                    }
+                    _ => Ok(Some(self.create_token(TokenType::Greater, ">".to_string())))
+                }
+            }
             _ => Err(LexicalError::new(
                 format!("Unexpected character: {}", char),
                 line)) 

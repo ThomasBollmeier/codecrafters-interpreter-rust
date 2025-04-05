@@ -18,6 +18,10 @@ pub enum TokenType {
     EqualEqual,
     Bang,
     BangEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
     Eof,
 }
 
@@ -58,6 +62,10 @@ impl Display for TokenType {
             EqualEqual => "EQUAL_EQUAL".to_string(),
             Bang => "BANG".to_string(),
             BangEqual => "BANG_EQUAL".to_string(),
+            Less => "LESS".to_string(),
+            LessEqual => "LESS_EQUAL".to_string(),
+            Greater => "GREATER".to_string(),
+            GreaterEqual => "GREATER_EQUAL".to_string(),
             Eof => "EOF".to_string(),
         };
         write!(f, "{}", text)
