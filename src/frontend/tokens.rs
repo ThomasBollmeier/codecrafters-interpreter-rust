@@ -22,6 +22,7 @@ pub enum TokenType {
     LessEqual,
     Greater,
     GreaterEqual,
+    Str,
     Eof,
 }
 
@@ -66,6 +67,7 @@ impl Display for TokenType {
             LessEqual => "LESS_EQUAL".to_string(),
             Greater => "GREATER".to_string(),
             GreaterEqual => "GREATER_EQUAL".to_string(),
+            Str => "STRING".to_string(),
             Eof => "EOF".to_string(),
         };
         write!(f, "{}", text)
@@ -93,6 +95,10 @@ impl Token {
 
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} null", self.token_type, self.lexeme)
+        let literal = match self.token_type {
+            Str => &self.lexeme[1..self.lexeme.len()-1],
+            _ => "null"
+        };
+        write!(f, "{} {} {}", self.token_type, self.lexeme, literal)
     }
 }

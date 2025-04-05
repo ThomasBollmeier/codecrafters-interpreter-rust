@@ -39,35 +39,49 @@ impl Scanner {
             ))
         }
     }
-    
-    fn create_token(&self, token_type: TokenType, lexeme: String) -> Token {
-        Token::new(token_type, self.line, self.col, lexeme)
-    }
 
-    fn skip_line_comment(&mut self) -> Result<(usize, Option<char>), LexicalError> {
+    fn skip_line_comment(&mut self) -> Result<(), LexicalError> {
         loop {
             let char_opt = self.advance()?;
             match char_opt {
                 Some('\n') => {
-                    let line = self.line;
-                    let char_opt = self.advance()?;
-                    return Ok((line, char_opt));
+                    return Ok(());
                 }
                 Some(_) => {}
                 None => {
-                    return Ok((self.line, None));
+                    return Ok(());
                 }
             }
         }
+    }
+
+    fn scan_string(&mut self, line: usize, column: usize) -> Result<Option<Token>, LexicalError> {
+        let mut lexeme = String::from("\"");
+        loop {
+            match self.advance()? {
+                Some(ch) => {
+                    lexeme.push(ch);
+                    if ch == '"' {
+                        break;
+                    }
+                }
+                None => return Err(LexicalError::new(
+                    "Unterminated string.".to_string(),
+                    line))
+            }
+        }
+        Ok(Some(Token::new(TokenType::Str, line, column, lexeme)))
     }
 }
 
 impl Stream<Token, LexicalError> for Scanner {
     fn next(&mut self) -> Result<Option<Token>, LexicalError> {
         let mut line: usize;
+        let mut column: usize;
         let mut char: char;
         loop {
             line = self.line;
+            column = self.col;
             char = match self.advance()? {
                 Some(char) => char,
                 None => return Ok(None),
@@ -81,12 +95,8 @@ impl Stream<Token, LexicalError> for Scanner {
                     None => break,
                 };
                 if *next_char == '/' {
-                    let (line_after_comment, char_opt) = self.skip_line_comment()?;
-                    line = line_after_comment;
-                    char = match char_opt {
-                        Some(char) => char,
-                        None => return Ok(None),
-                    };
+                    self.skip_line_comment()?;
+                    continue;
                 }
                 break;
             } else {
@@ -95,7 +105,7 @@ impl Stream<Token, LexicalError> for Scanner {
         }
         
         if let Some(token_type) = TokenType::get_single_char_token_type(char) {
-            return Ok(Some(self.create_token(token_type, format!("{char}"))));
+            return Ok(Some(Token::new(token_type, line, column, format!("{char}"))));
         }
 
         match char {
@@ -103,38 +113,39 @@ impl Stream<Token, LexicalError> for Scanner {
                 match self.stream.peek() {
                     Some('=') => {
                         self.advance()?;
-                        Ok(Some(self.create_token(TokenType::EqualEqual, "==".to_string())))
+                        Ok(Some(Token::new(TokenType::EqualEqual, line, column, "==".to_string())))
                     }
-                    _ => Ok(Some(self.create_token(TokenType::Equal, "=".to_string())))
+                    _ => Ok(Some(Token::new(TokenType::Equal, line, column, "=".to_string())))
                 }
             }
             '!' => {
                 match self.stream.peek() {
                     Some('=') => {
                         self.advance()?;
-                        Ok(Some(self.create_token(TokenType::BangEqual, "!=".to_string())))
+                        Ok(Some(Token::new(TokenType::BangEqual, line, column, "!=".to_string())))
                     }
-                    _ => Ok(Some(self.create_token(TokenType::Bang, "!".to_string())))
+                    _ => Ok(Some(Token::new(TokenType::Bang, line, column, "!".to_string())))
                 }
             }
             '<' => {
                 match self.stream.peek() {
                     Some('=') => {
                         self.advance()?;
-                        Ok(Some(self.create_token(TokenType::LessEqual, "<=".to_string())))
+                        Ok(Some(Token::new(TokenType::LessEqual, line, column, "<=".to_string())))
                     }
-                    _ => Ok(Some(self.create_token(TokenType::Less, "<".to_string())))
+                    _ => Ok(Some(Token::new(TokenType::Less, line, column, "<".to_string())))
                 }
             }
             '>' => {
                 match self.stream.peek() {
                     Some('=') => {
                         self.advance()?;
-                        Ok(Some(self.create_token(TokenType::GreaterEqual, ">=".to_string())))
+                        Ok(Some(Token::new(TokenType::GreaterEqual, line, column, ">=".to_string())))
                     }
-                    _ => Ok(Some(self.create_token(TokenType::Greater, ">".to_string())))
+                    _ => Ok(Some(Token::new(TokenType::Greater, line, column, ">".to_string())))
                 }
             }
+            '"' => self.scan_string(line, column),
             _ => Err(LexicalError::new(
                 format!("Unexpected character: {}", char),
                 line)) 
