@@ -116,7 +116,41 @@ impl Scanner {
 
         let num = num_str.parse::<f64>().unwrap();
 
-        Ok(Some(Token::new(TokenType::Number, line, column, num_str, Literal::Number(num))))
+        Ok(Some(Token::new(TokenType::Number, 
+                           line, 
+                           column, 
+                           num_str, 
+                           Literal::Number(num))))
+    } 
+    
+    fn starts_identifier(ch: char) -> bool {
+        ch == '_' || ch.is_alphabetic()
+    } 
+    
+    fn is_valid_identifier_char(ch: char) -> bool {
+        ch == '_' || ch.is_alphanumeric()
+    }
+    
+    fn scan_identifier(&mut self, 
+                       first_char: char, 
+                       line: usize, 
+                       column: usize) -> Result<Option<Token>, LexicalError> {
+        
+        let mut ident = String::from(first_char);
+        
+        while let Some(&next_char) = self.stream.peek() {
+            if !Scanner::is_valid_identifier_char(next_char) {
+                break;
+            }
+            self.advance()?;
+            ident.push(next_char);
+        }
+        
+        Ok(Some(Token::new(TokenType::Identifier, 
+                           line, 
+                           column,
+                           ident.clone(),
+                           Literal::Null)))
     } 
 }
 
@@ -161,6 +195,7 @@ impl Stream<Token, LexicalError> for Scanner {
             '>' => self.scan_one_or_two_char_operator(line, column, char, TokenType::Greater, TokenType::GreaterEqual),
             '"' => self.scan_string(line, column),
             ch if ch.is_ascii_digit() => self.scan_number(ch, line, column), 
+            ch if Scanner::starts_identifier(ch) => self.scan_identifier(ch, line, column),
             _ => Err(LexicalError::new(
                 format!("Unexpected character: {}", char),
                 line)) 

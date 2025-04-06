@@ -24,6 +24,7 @@ pub enum TokenType {
     GreaterEqual,
     Str,
     Number,
+    Identifier,
     Eof,
 }
 
@@ -70,6 +71,7 @@ impl Display for TokenType {
             GreaterEqual => "GREATER_EQUAL".to_string(),
             Str => "STRING".to_string(),
             Number => "NUMBER".to_string(),
+            Identifier => "IDENTIFIER".to_string(),
             Eof => "EOF".to_string(),
         };
         write!(f, "{}", text)
