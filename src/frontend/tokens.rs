@@ -25,8 +25,25 @@ pub enum TokenType {
     Str,
     Number,
     Identifier,
+    And, 
+    Class, 
+    Else, 
+    False, 
+    For, 
+    Fun, 
+    If, 
+    Nil, 
+    Or, 
+    Print, 
+    Return, 
+    Super, 
+    This, 
+    True, 
+    Var, 
+    While,
     Eof,
 }
+
 
 impl TokenType {
     pub fn get_single_char_token_type(ch: char) -> Option<TokenType> {
@@ -45,6 +62,28 @@ impl TokenType {
             _ => None
         }
     }
+
+    pub fn get_keyword_token_type(lexeme: &str) -> Option<TokenType> {
+        match lexeme {
+            "and" => Some(And),
+            "class" => Some(Class),
+            "else" => Some(Else),
+            "false" => Some(False),
+            "for" => Some(For),
+            "fun" => Some(Fun),
+            "if" => Some(If),
+            "nil" => Some(Nil),
+            "or" => Some(Or),
+            "print" => Some(Print),
+            "return" => Some(Return),
+            "super" => Some(Super),
+            "this" => Some(This),
+            "true" => Some(True),
+            "var" => Some(Var),
+            "while" => Some(While),
+            _ => None,
+        }
+    } 
 }
 
 impl Display for TokenType {
@@ -72,6 +111,22 @@ impl Display for TokenType {
             Str => "STRING".to_string(),
             Number => "NUMBER".to_string(),
             Identifier => "IDENTIFIER".to_string(),
+            And => "AND".to_string(),
+            Class => "CLASS".to_string(),
+            Else => "ELSE".to_string(),
+            False => "FALSE".to_string(),
+            For => "FOR".to_string(),
+            Fun => "FUN".to_string(),
+            If => "IF".to_string(),
+            Nil => "NIL".to_string(),
+            Or => "OR".to_string(),
+            Print => "PRINT".to_string(),
+            Return => "RETURN".to_string(),
+            Super => "SUPER".to_string(),
+            This => "THIS".to_string(),
+            True => "TRUE".to_string(),
+            Var => "VAR".to_string(),
+            While => "WHILE".to_string(),
             Eof => "EOF".to_string(),
         };
         write!(f, "{}", text)

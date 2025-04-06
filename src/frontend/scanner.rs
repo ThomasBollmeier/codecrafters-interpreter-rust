@@ -145,8 +145,11 @@ impl Scanner {
             self.advance()?;
             ident.push(next_char);
         }
+
+        let token_type = TokenType::get_keyword_token_type(&ident)
+            .unwrap_or(TokenType::Identifier);
         
-        Ok(Some(Token::new(TokenType::Identifier, 
+        Ok(Some(Token::new(token_type, 
                            line, 
                            column,
                            ident.clone(),
