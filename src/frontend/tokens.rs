@@ -25,25 +25,24 @@ pub enum TokenType {
     Str,
     Number,
     Identifier,
-    And, 
-    Class, 
-    Else, 
-    False, 
-    For, 
-    Fun, 
-    If, 
-    Nil, 
-    Or, 
-    Print, 
-    Return, 
-    Super, 
-    This, 
-    True, 
-    Var, 
+    And,
+    Class,
+    Else,
+    False,
+    For,
+    Fun,
+    If,
+    Nil,
+    Or,
+    Print,
+    Return,
+    Super,
+    This,
+    True,
+    Var,
     While,
     Eof,
 }
-
 
 impl TokenType {
     pub fn get_single_char_token_type(ch: char) -> Option<TokenType> {
@@ -59,7 +58,7 @@ impl TokenType {
             ';' => Some(Semicolon),
             '/' => Some(Slash),
             '*' => Some(Star),
-            _ => None
+            _ => None,
         }
     }
 
@@ -83,12 +82,12 @@ impl TokenType {
             "while" => Some(While),
             _ => None,
         }
-    } 
+    }
 }
 
 impl Display for TokenType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let text = match &self {  
+        let text = match &self {
             LeftParen => "LEFT_PAREN".to_string(),
             RightParen => "RIGHT_PAREN".to_string(),
             LeftBrace => "LEFT_BRACE".to_string(),
@@ -150,18 +149,19 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn new(token_type: TokenType, 
-               line: usize, 
-               column: usize, 
-               lexeme: String,
-               literal: Literal,
+    pub fn new(
+        token_type: TokenType,
+        line: usize,
+        column: usize,
+        lexeme: String,
+        literal: Literal,
     ) -> Token {
         Token {
             token_type,
             line,
             column,
             lexeme,
-            literal
+            literal,
         }
     }
 }

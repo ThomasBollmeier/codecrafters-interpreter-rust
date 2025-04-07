@@ -7,7 +7,16 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="" />
+    <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/frontend/ast.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/frontend/ast_printer.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/frontend/parser.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/frontend.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/frontend/scanner.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/scanner.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/frontend/tokens.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/tokens.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -57,7 +66,7 @@
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
     &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;language.rust.cargo.check&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;language.rust.rustfmt&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -191,22 +200,14 @@
       <workItem from="1743869182246" duration="773000" />
       <workItem from="1743875685136" duration="4034000" />
       <workItem from="1743926465206" duration="996000" />
+      <workItem from="1743963815010" duration="3325000" />
+      <workItem from="1744005064220" duration="594000" />
+      <workItem from="1744051799519" duration="4512000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/main.rs</url>
-          <line>9</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

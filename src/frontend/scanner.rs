@@ -1,23 +1,23 @@
-use std::error::Error;
-use std::fmt::{Display, Formatter};
 use crate::frontend::stream::{BufferedStream, CharStream, Stream};
 use crate::frontend::tokens::{Literal, Token, TokenType};
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 
 pub struct Scanner {
     stream: BufferedStream<char, ()>,
     line: usize,
-    col: usize, 
+    col: usize,
 }
 
 impl Scanner {
     pub fn new(char_stream: CharStream) -> Scanner {
         Scanner {
             stream: BufferedStream::new(Box::new(char_stream)),
-            line: 1, 
+            line: 1,
             col: 1,
         }
     }
-    
+
     fn advance(&mut self) -> Result<Option<char>, LexicalError> {
         match self.stream.advance() {
             Ok(next_char_opt) => {
@@ -35,8 +35,8 @@ impl Scanner {
             }
             Err(_) => Err(LexicalError::new(
                 "Could not advance to next char".to_string(),
-                self.line
-            ))
+                self.line,
+            )),
         }
     }
 
@@ -55,18 +55,32 @@ impl Scanner {
         }
     }
 
-    fn scan_one_or_two_char_operator(&mut self, 
-        line: usize, 
+    fn scan_one_or_two_char_operator(
+        &mut self,
+        line: usize,
         column: usize,
-        ch: char, 
-        token_type_1: TokenType, 
-        token_type_2: TokenType) -> Result<Option<Token>, LexicalError> {
+        ch: char,
+        token_type_1: TokenType,
+        token_type_2: TokenType,
+    ) -> Result<Option<Token>, LexicalError> {
         match self.stream.peek() {
             Some('=') => {
                 self.advance()?;
-                Ok(Some(Token::new(token_type_2, line, column, format!("{}=", ch), Literal::Null)))
+                Ok(Some(Token::new(
+                    token_type_2,
+                    line,
+                    column,
+                    format!("{}=", ch),
+                    Literal::Null,
+                )))
             }
-            _ => Ok(Some(Token::new(token_type_1, line, column, format!("{ch}"), Literal::Null)))
+            _ => Ok(Some(Token::new(
+                token_type_1,
+                line,
+                column,
+                format!("{ch}"),
+                Literal::Null,
+            ))),
         }
     }
 
@@ -80,19 +94,25 @@ impl Scanner {
                         break;
                     }
                 }
-                None => return Err(LexicalError::new(
-                    "Unterminated string.".to_string(),
-                    line))
+                None => return Err(LexicalError::new("Unterminated string.".to_string(), line)),
             }
         }
-        let s = lexeme[1..lexeme.len()-1].to_string();
-        Ok(Some(Token::new(TokenType::Str, line, column, lexeme, Literal::Str(s))))
+        let s = lexeme[1..lexeme.len() - 1].to_string();
+        Ok(Some(Token::new(
+            TokenType::Str,
+            line,
+            column,
+            lexeme,
+            Literal::Str(s),
+        )))
     }
-    
-    fn scan_number(&mut self, 
-                   first_digit: char, 
-                   line: usize, 
-                   column: usize) -> Result<Option<Token>, LexicalError> {
+
+    fn scan_number(
+        &mut self,
+        first_digit: char,
+        line: usize,
+        column: usize,
+    ) -> Result<Option<Token>, LexicalError> {
         let mut num_str = String::new();
         num_str.push(first_digit);
 
@@ -116,28 +136,31 @@ impl Scanner {
 
         let num = num_str.parse::<f64>().unwrap();
 
-        Ok(Some(Token::new(TokenType::Number, 
-                           line, 
-                           column, 
-                           num_str, 
-                           Literal::Number(num))))
-    } 
-    
+        Ok(Some(Token::new(
+            TokenType::Number,
+            line,
+            column,
+            num_str,
+            Literal::Number(num),
+        )))
+    }
+
     fn starts_identifier(ch: char) -> bool {
         ch == '_' || ch.is_alphabetic()
-    } 
-    
+    }
+
     fn is_valid_identifier_char(ch: char) -> bool {
         ch == '_' || ch.is_alphanumeric()
     }
-    
-    fn scan_identifier(&mut self, 
-                       first_char: char, 
-                       line: usize, 
-                       column: usize) -> Result<Option<Token>, LexicalError> {
-        
+
+    fn scan_identifier(
+        &mut self,
+        first_char: char,
+        line: usize,
+        column: usize,
+    ) -> Result<Option<Token>, LexicalError> {
         let mut ident = String::from(first_char);
-        
+
         while let Some(&next_char) = self.stream.peek() {
             if !Scanner::is_valid_identifier_char(next_char) {
                 break;
@@ -146,15 +169,16 @@ impl Scanner {
             ident.push(next_char);
         }
 
-        let token_type = TokenType::get_keyword_token_type(&ident)
-            .unwrap_or(TokenType::Identifier);
-        
-        Ok(Some(Token::new(token_type, 
-                           line, 
-                           column,
-                           ident.clone(),
-                           Literal::Null)))
-    } 
+        let token_type = TokenType::get_keyword_token_type(&ident).unwrap_or(TokenType::Identifier);
+
+        Ok(Some(Token::new(
+            token_type,
+            line,
+            column,
+            ident.clone(),
+            Literal::Null,
+        )))
+    }
 }
 
 impl Stream<Token, LexicalError> for Scanner {
@@ -169,7 +193,7 @@ impl Stream<Token, LexicalError> for Scanner {
                 Some(char) => char,
                 None => return Ok(None),
             };
-            
+
             if char.is_whitespace() {
                 continue;
             } else if char == '/' {
@@ -186,22 +210,53 @@ impl Stream<Token, LexicalError> for Scanner {
                 break;
             }
         }
-        
+
         if let Some(token_type) = TokenType::get_single_char_token_type(char) {
-            return Ok(Some(Token::new(token_type, line, column, format!("{char}"), Literal::Null)));
+            return Ok(Some(Token::new(
+                token_type,
+                line,
+                column,
+                format!("{char}"),
+                Literal::Null,
+            )));
         }
 
         match char {
-            '=' => self.scan_one_or_two_char_operator(line, column, char, TokenType::Equal, TokenType::EqualEqual),
-            '!' => self.scan_one_or_two_char_operator(line, column, char, TokenType::Bang, TokenType::BangEqual),
-            '<' => self.scan_one_or_two_char_operator(line, column, char, TokenType::Less, TokenType::LessEqual),
-            '>' => self.scan_one_or_two_char_operator(line, column, char, TokenType::Greater, TokenType::GreaterEqual),
+            '=' => self.scan_one_or_two_char_operator(
+                line,
+                column,
+                char,
+                TokenType::Equal,
+                TokenType::EqualEqual,
+            ),
+            '!' => self.scan_one_or_two_char_operator(
+                line,
+                column,
+                char,
+                TokenType::Bang,
+                TokenType::BangEqual,
+            ),
+            '<' => self.scan_one_or_two_char_operator(
+                line,
+                column,
+                char,
+                TokenType::Less,
+                TokenType::LessEqual,
+            ),
+            '>' => self.scan_one_or_two_char_operator(
+                line,
+                column,
+                char,
+                TokenType::Greater,
+                TokenType::GreaterEqual,
+            ),
             '"' => self.scan_string(line, column),
-            ch if ch.is_ascii_digit() => self.scan_number(ch, line, column), 
+            ch if ch.is_ascii_digit() => self.scan_number(ch, line, column),
             ch if Scanner::starts_identifier(ch) => self.scan_identifier(ch, line, column),
             _ => Err(LexicalError::new(
                 format!("Unexpected character: {}", char),
-                line)) 
+                line,
+            )),
         }
     }
 }
@@ -214,16 +269,13 @@ pub struct LexicalError {
 
 impl LexicalError {
     fn new(message: String, line: usize) -> LexicalError {
-        LexicalError {
-            message,
-            line
-        }
+        LexicalError { message, line }
     }
 
     pub fn get_line(&self) -> usize {
         self.line
     }
-    
+
     pub fn get_message(&self) -> &str {
         &self.message
     }
