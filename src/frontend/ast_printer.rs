@@ -24,7 +24,13 @@ impl AstPrinter {
     
     fn print_number(&self, token: &Token) {
         if let Literal::Number(num) = token.literal {
-            println!("{num:?}")
+            println!("{num:?}");
+        }
+    }
+    
+    fn print_string(&self, token: &Token) {
+        if let Literal::Str(s) = &token.literal {
+            println!("{s}");
         }
     }
 }
@@ -39,6 +45,7 @@ impl AstVisitor for AstPrinter {
                     TokenType::True | TokenType::False => self.print_boolean(token),
                     TokenType::Nil => self.print_nil(),
                     TokenType::Number => self.print_number(token),
+                    TokenType::Str => self.print_string(token),
                     _ => {}
                 }
             } 
