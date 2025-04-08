@@ -1,4 +1,5 @@
-use crate::frontend::ast::{Ast, AstNode, AstType, AstValue, AstVisitor};
+use crate::frontend::ast::{Ast, AstVisitor};
+use crate::frontend::tokens::{Literal, Token, TokenType};
 
 pub struct AstPrinter {}
 
@@ -13,31 +14,34 @@ impl AstPrinter {
         AstPrinter {}
     }
 
-    fn print_boolean(&self, boolean: &AstNode) {
-        if let Some(AstValue::Boolean(value)) = boolean.get_value() {
-            println!("{}", if *value {
-                "true"
-            } else {
-                "false"
-            });
-        }
+    fn print_boolean(&self, token: &Token) {
+        println!("{}", token.lexeme);
     }
     
     fn print_nil(&self) {
         println!("nil");
+    }
+    
+    fn print_number(&self, token: &Token) {
+        if let Literal::Number(num) = token.literal {
+            println!("{num:?}")
+        }
     }
 }
 
 impl AstVisitor for AstPrinter {
     fn visit(&self, ast: &Ast) {
         match ast {
-            Ast::NonTerminal(ast_node) => {
-                match ast_node.get_type() {
-                    AstType::Boolean => self.print_boolean(ast_node),
-                    AstType::Nil => self.print_nil(),
-                }
+            Ast::NonTerminal(_ast_node) => {
             }
-            Ast::Terminal(_) => {} 
+            Ast::Terminal(token) => {
+                match token.token_type {
+                    TokenType::True | TokenType::False => self.print_boolean(token),
+                    TokenType::Nil => self.print_nil(),
+                    TokenType::Number => self.print_number(token),
+                    _ => {}
+                }
+            } 
         }
     }
     

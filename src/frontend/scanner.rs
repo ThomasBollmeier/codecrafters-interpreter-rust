@@ -1,7 +1,6 @@
+use crate::common::LoxError;
 use crate::frontend::stream::{BufferedStream, CharStream, Stream};
 use crate::frontend::tokens::{Literal, Token, TokenType};
-use std::error::Error;
-use std::fmt::{Display, Formatter};
 
 pub struct Scanner {
     stream: BufferedStream<char, ()>,
@@ -18,7 +17,7 @@ impl Scanner {
         }
     }
 
-    fn advance(&mut self) -> Result<Option<char>, LexicalError> {
+    fn advance(&mut self) -> Result<Option<char>, LoxError> {
         match self.stream.advance() {
             Ok(next_char_opt) => {
                 match next_char_opt {
@@ -33,14 +32,14 @@ impl Scanner {
                 }
                 Ok(next_char_opt)
             }
-            Err(_) => Err(LexicalError::new(
+            Err(_) => Err(LoxError::new_in_lexical_ctx(
                 "Could not advance to next char".to_string(),
                 self.line,
             )),
         }
     }
 
-    fn skip_line_comment(&mut self) -> Result<(), LexicalError> {
+    fn skip_line_comment(&mut self) -> Result<(), LoxError> {
         loop {
             let char_opt = self.advance()?;
             match char_opt {
@@ -62,7 +61,7 @@ impl Scanner {
         ch: char,
         token_type_1: TokenType,
         token_type_2: TokenType,
-    ) -> Result<Option<Token>, LexicalError> {
+    ) -> Result<Option<Token>, LoxError> {
         match self.stream.peek() {
             Some('=') => {
                 self.advance()?;
@@ -84,7 +83,7 @@ impl Scanner {
         }
     }
 
-    fn scan_string(&mut self, line: usize, column: usize) -> Result<Option<Token>, LexicalError> {
+    fn scan_string(&mut self, line: usize, column: usize) -> Result<Option<Token>, LoxError> {
         let mut lexeme = String::from("\"");
         loop {
             match self.advance()? {
@@ -94,7 +93,12 @@ impl Scanner {
                         break;
                     }
                 }
-                None => return Err(LexicalError::new("Unterminated string.".to_string(), line)),
+                None => {
+                    return Err(LoxError::new_in_lexical_ctx(
+                        "Unterminated string.".to_string(),
+                        line,
+                    ))
+                }
             }
         }
         let s = lexeme[1..lexeme.len() - 1].to_string();
@@ -112,7 +116,7 @@ impl Scanner {
         first_digit: char,
         line: usize,
         column: usize,
-    ) -> Result<Option<Token>, LexicalError> {
+    ) -> Result<Option<Token>, LoxError> {
         let mut num_str = String::new();
         num_str.push(first_digit);
 
@@ -131,7 +135,10 @@ impl Scanner {
         }
 
         if let Some('.') = last_char_opt {
-            return Err(LexicalError::new("invalid number".to_string(), line));
+            return Err(LoxError::new_in_lexical_ctx(
+                "invalid number".to_string(),
+                line,
+            ));
         }
 
         let num = num_str.parse::<f64>().unwrap();
@@ -158,7 +165,7 @@ impl Scanner {
         first_char: char,
         line: usize,
         column: usize,
-    ) -> Result<Option<Token>, LexicalError> {
+    ) -> Result<Option<Token>, LoxError> {
         let mut ident = String::from(first_char);
 
         while let Some(&next_char) = self.stream.peek() {
@@ -181,8 +188,8 @@ impl Scanner {
     }
 }
 
-impl Stream<Token, LexicalError> for Scanner {
-    fn next(&mut self) -> Result<Option<Token>, LexicalError> {
+impl Stream<Token, LoxError> for Scanner {
+    fn next(&mut self) -> Result<Option<Token>, LoxError> {
         let mut line: usize;
         let mut column: usize;
         let mut char: char;
@@ -253,38 +260,10 @@ impl Stream<Token, LexicalError> for Scanner {
             '"' => self.scan_string(line, column),
             ch if ch.is_ascii_digit() => self.scan_number(ch, line, column),
             ch if Scanner::starts_identifier(ch) => self.scan_identifier(ch, line, column),
-            _ => Err(LexicalError::new(
+            _ => Err(LoxError::new_in_lexical_ctx(
                 format!("Unexpected character: {}", char),
                 line,
             )),
         }
     }
 }
-
-#[derive(Debug)]
-pub struct LexicalError {
-    message: String,
-    line: usize,
-}
-
-impl LexicalError {
-    fn new(message: String, line: usize) -> LexicalError {
-        LexicalError { message, line }
-    }
-
-    pub fn get_line(&self) -> usize {
-        self.line
-    }
-
-    pub fn get_message(&self) -> &str {
-        &self.message
-    }
-}
-
-impl Display for LexicalError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.message)
-    }
-}
-
-impl Error for LexicalError {}

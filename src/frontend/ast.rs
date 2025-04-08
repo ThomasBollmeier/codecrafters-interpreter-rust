@@ -2,8 +2,7 @@ use crate::frontend::tokens::Token;
 use std::collections::HashMap;
 
 pub enum AstType {
-    Boolean,
-    Nil,
+    Program,
 }
 
 pub enum AstValue {

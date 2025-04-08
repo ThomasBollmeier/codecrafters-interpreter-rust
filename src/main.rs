@@ -2,6 +2,7 @@ use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process::ExitCode;
+use codecrafters_interpreter::common::ErrorContext;
 use codecrafters_interpreter::frontend::ast_printer::AstPrinter;
 use codecrafters_interpreter::frontend::parser::Parser;
 use codecrafters_interpreter::frontend::scanner::Scanner;
@@ -48,18 +49,21 @@ fn main() -> ExitCode {
         "parse" => {
             let file_contents = read_file(filename);
             let scanner = Scanner::new(CharStream::new(file_contents));
-            let mut exit_code = ExitCode::SUCCESS;
-
             let mut parser = Parser::new(scanner);
-            match parser.expression() {
+
+            let exit_code = match parser.expression() {
                 Ok(ast) => {
                     let ast_printer = AstPrinter::new();
                     ast.accept(&ast_printer);
+                    ExitCode::SUCCESS
                 },
-                Err(_err) => {
-                    exit_code = ExitCode::from(70); // todo: handle lexical errors separately
+                Err(err) => {
+                    match err.get_context() {
+                        ErrorContext::Lexical => ExitCode::from(65),
+                        ErrorContext::Parser => ExitCode::from(70),
+                    }
                 }
-            }
+            };
 
             exit_code
         }

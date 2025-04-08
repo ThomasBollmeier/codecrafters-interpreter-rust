@@ -1,10 +1,9 @@
-use crate::frontend::ast::Ast::{NonTerminal, Terminal};
-use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
+use crate::common::LoxError;
+use crate::frontend::ast::Ast::Terminal;
+use crate::frontend::ast::Ast;
 use crate::frontend::scanner::Scanner;
 use crate::frontend::stream::Stream;
 use crate::frontend::tokens::{Token, TokenType};
-use std::error::Error;
-use std::fmt::{Display, Formatter};
 
 pub struct Parser {
     scanner: Scanner,
@@ -15,54 +14,20 @@ impl Parser {
         Parser { scanner }
     }
 
-    pub fn expression(&mut self) -> Result<Ast, Box<dyn Error>> {
-        let token = self.advance()?.ok_or(Box::new(ParseError::new(
+    pub fn expression(&mut self) -> Result<Ast, LoxError> {
+        let token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
             "expected token but got none".to_string(),
-        )))?;
+        ))?;
 
         match token.token_type {
-            TokenType::True | TokenType::False => {
-                let value = token.lexeme == "true";
-                let mut ast_node = AstNode::new(AstType::Boolean, Some(AstValue::Boolean(value)));
-                ast_node.add_child(Terminal(token));
-                Ok(NonTerminal(ast_node))
+            TokenType::True | TokenType::False | TokenType::Nil | TokenType::Number => {
+                Ok(Terminal(token))
             }
-            TokenType::Nil => {
-                let mut ast_node = AstNode::new(AstType::Nil, None);
-                ast_node.add_child(Terminal(token));
-                Ok(NonTerminal(ast_node))
-            }
-            _ => Err(Box::new(ParseError::new("unexpected token".to_string()))),
+            _ => Err(LoxError::new_in_parser_ctx("unexpected token".to_string())),
         }
     }
 
-    fn advance(&mut self) -> Result<Option<Token>, Box<dyn Error>> {
-        self.scanner.next().map_err(|e| {
-            let err: Box<dyn Error> = Box::new(e);
-            err
-        })
+    fn advance(&mut self) -> Result<Option<Token>, LoxError> {
+        self.scanner.next()
     }
 }
-
-#[derive(Debug)]
-pub struct ParseError {
-    message: String,
-}
-
-impl ParseError {
-    fn new(message: String) -> ParseError {
-        ParseError { message }
-    }
-
-    pub fn get_message(&self) -> &str {
-        &self.message
-    }
-}
-
-impl Display for ParseError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.message)
-    }
-}
-
-impl Error for ParseError {}
