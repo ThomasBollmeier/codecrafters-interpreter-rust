@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use TokenType::*;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum TokenType {
     LeftParen,
     RightParen,

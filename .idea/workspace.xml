@@ -8,15 +8,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/frontend/ast.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/ast.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/frontend/ast_printer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/ast_printer.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/frontend/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/parser.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/frontend/tokens.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/tokens.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="RsBuildProfile:dev" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="RsBuildProfile:test" />
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -44,6 +47,7 @@
     "Cargo.Run codecrafters-interpreter (1).executor": "Debug",
     "Cargo.Run codecrafters-interpreter (2).executor": "Debug",
     "Cargo.Run codecrafters-interpreter.executor": "Run",
+    "Cargo.Test frontend::parser::tests::group.executor": "Debug",
     "Cargo.Test frontend::stream::tests::test_buffered_stream_advance.executor": "Run",
     "Cargo.Test frontend::stream::tests::test_buffered_stream_peek.executor": "Run",
     "Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many.executor": "Run",
@@ -69,7 +73,7 @@
     <option name="runOnTheFly" value="true" />
     <option name="tool" value="Clippy" />
   </component>
-  <component name="RunManager" selected="Cargo.Run codecrafters-interpreter">
+  <component name="RunManager" selected="Cargo.Test frontend::parser::tests::group">
     <configuration name="Run codecrafters-interpreter" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
       <option name="buildProfileId" value="dev" />
       <option name="command" value="run --package codecrafters-interpreter --bin codecrafters-interpreter -- tokenize test.lox" />
@@ -90,6 +94,24 @@
     </configuration>
     <configuration name="Test codecrafters-interpreter" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
       <option name="command" value="test --workspace" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test frontend::parser::tests::group" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="buildProfileId" value="test" />
+      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::group -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -160,12 +182,14 @@
     <list>
       <item itemvalue="Cargo.Run codecrafters-interpreter" />
       <item itemvalue="Cargo.Test codecrafters-interpreter" />
+      <item itemvalue="Cargo.Test frontend::parser::tests::group" />
       <item itemvalue="Cargo.Test frontend::stream::tests::test_buffered_stream_peek" />
       <item itemvalue="Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many" />
       <item itemvalue="Cargo.Test stream::tests" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Cargo.Test frontend::parser::tests::group" />
         <item itemvalue="Cargo.Test stream::tests" />
         <item itemvalue="Cargo.Test frontend::stream::tests::test_buffered_stream_peek" />
         <item itemvalue="Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many" />
@@ -198,12 +222,24 @@
       <workItem from="1743963815010" duration="3325000" />
       <workItem from="1744005064220" duration="594000" />
       <workItem from="1744051799519" duration="4873000" />
-      <workItem from="1744138682243" duration="2679000" />
+      <workItem from="1744138682243" duration="3051000" />
+      <workItem from="1744218368522" duration="3707000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/frontend/parser.rs</url>
+          <line>33</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

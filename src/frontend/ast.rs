@@ -2,7 +2,7 @@ use crate::frontend::tokens::Token;
 use std::collections::HashMap;
 
 pub enum AstType {
-    Program,
+    Group,
 }
 
 pub enum AstValue {
