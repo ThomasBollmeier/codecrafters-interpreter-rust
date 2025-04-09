@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 pub enum AstType {
     Group,
+    Unary,
 }
 
 pub enum AstValue {

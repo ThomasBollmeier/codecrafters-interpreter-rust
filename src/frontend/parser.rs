@@ -1,6 +1,6 @@
 use crate::common::LoxError;
-use crate::frontend::ast::{Ast, AstNode, AstType};
 use crate::frontend::ast::Ast::{NonTerminal, Terminal};
+use crate::frontend::ast::{Ast, AstNode, AstType};
 use crate::frontend::scanner::Scanner;
 use crate::frontend::stream::{BufferedStream, CharStream};
 use crate::frontend::tokens::{Token, TokenType};
@@ -11,7 +11,9 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(scanner: Scanner) -> Parser {
-        Parser { token_stream: BufferedStream::new(Box::new(scanner)) }
+        Parser {
+            token_stream: BufferedStream::new(Box::new(scanner)),
+        }
     }
 
     pub fn expression(&mut self) -> Result<Ast, LoxError> {
@@ -26,6 +28,7 @@ impl Parser {
             | TokenType::Number
             | TokenType::Str => Ok(Terminal(token)),
             TokenType::LeftParen => self.group(token),
+            TokenType::Bang | TokenType::Minus => self.unary(token),
             _ => Err(LoxError::new_in_parser_ctx("unexpected token".to_string())),
         }
     }
@@ -35,8 +38,16 @@ impl Parser {
         group_node.add_child(Terminal(open_paren));
         group_node.add_child(self.expression()?);
         group_node.add_child(Terminal(self.consume(&vec![TokenType::RightParen])?));
-        
+
         Ok(NonTerminal(group_node))
+    }
+
+    fn unary(&mut self, operator: Token) -> Result<Ast, LoxError> {
+        let mut unary_node = AstNode::new(AstType::Unary, None);
+        unary_node.add_child(Terminal(operator));
+        unary_node.add_child(self.expression()?);
+
+        Ok(NonTerminal(unary_node))
     }
 
     fn advance(&mut self) -> Result<Option<Token>, LoxError> {
@@ -44,10 +55,10 @@ impl Parser {
     }
 
     fn consume(&mut self, expected: &Vec<TokenType>) -> Result<Token, LoxError> {
-        let next_token = self.token_stream
-            .peek()
-            .ok_or(LoxError::new_in_parser_ctx("expected token, but got none".to_string()))?;
-        
+        let next_token = self.token_stream.peek().ok_or(LoxError::new_in_parser_ctx(
+            "expected token, but got none".to_string(),
+        ))?;
+
         let mut found = false;
         for exp in expected {
             if &next_token.token_type == exp {
@@ -55,12 +66,14 @@ impl Parser {
                 break;
             }
         }
-        
+
         if found {
             let token = self.token_stream.advance()?.unwrap();
             Ok(token)
         } else {
-            Err(LoxError::new_in_parser_ctx("token has unexpected type".to_string()))
+            Err(LoxError::new_in_parser_ctx(
+                "token has unexpected type".to_string(),
+            ))
         }
     }
 }
@@ -74,11 +87,23 @@ pub fn parse_expression(code: &str) -> Result<Ast, LoxError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+    use crate::frontend::ast_printer::AstPrinter;
+
     #[test]
     fn group() {
         let result = parse_expression("(42)");
         assert!(result.is_ok());
+
+        let ast_printer = AstPrinter::new();
+        assert_eq!("(group 42.0)", ast_printer.str(&result.unwrap()))
     }
-    
+
+    #[test]
+    fn unary() {
+        let result = parse_expression("!true");
+        assert!(result.is_ok());
+
+        let ast_printer = AstPrinter::new();
+        assert_eq!("(! true)", ast_printer.str(&result.unwrap()))
+    }
 }
