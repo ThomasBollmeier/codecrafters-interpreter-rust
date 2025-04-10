@@ -26,7 +26,36 @@ impl Parser {
             "expected token but got none".to_string(),
         ))?;
 
-        self.product(token)
+        self.sum(token)
+    }
+
+    fn sum(&mut self, token: Token) -> Result<Ast, LoxError> {
+        let mut operands = VecDeque::new();
+        let mut operators = VecDeque::new();
+
+        let mut next_token = token;
+
+        loop {
+            let operand = self.product(next_token)?;
+            operands.push_back(operand);
+
+            match self.peek() {
+                Some(token) => match token.token_type {
+                    TokenType::Plus | TokenType::Minus => {}
+                    _ => break,
+                },
+                None => break,
+            }
+
+            let operator = self.advance()?.unwrap();
+            operators.push_back(operator);
+
+            next_token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
+                "expected operand but got none".to_string(),
+            ))?;
+        }
+
+        Ok(Parser::left_assoc_bin_ast(&mut operands, &mut operators))
     }
 
     fn product(&mut self, token: Token) -> Result<Ast, LoxError> {
@@ -54,19 +83,23 @@ impl Parser {
                 "expected operand but got none".to_string(),
             ))?;
         }
-
+        
+        Ok(Parser::left_assoc_bin_ast(&mut operands, &mut operators))
+    }
+    
+    fn left_assoc_bin_ast(operands: &mut VecDeque<Ast>, operators: &mut VecDeque<Token>) -> Ast {
         if operands.len() == 1 {
-            return Ok(operands.pop_front().unwrap());
+            return operands.pop_front().unwrap();
         }
 
         let mut operator = operators.pop_front().unwrap();
-        let mut product_node = AstNode::new(
+        let mut ret = AstNode::new(
             AstType::Binary,
             Some(AstValue::Str(operator.lexeme.clone())),
         );
-        product_node.add_child(operands.pop_front().unwrap());
-        product_node.add_child(Terminal(operator));
-        product_node.add_child(operands.pop_front().unwrap());
+        ret.add_child(operands.pop_front().unwrap());
+        ret.add_child(Terminal(operator));
+        ret.add_child(operands.pop_front().unwrap());
 
         while !operators.is_empty() {
             operator = operators.pop_front().unwrap();
@@ -74,13 +107,13 @@ impl Parser {
                 AstType::Binary,
                 Some(AstValue::Str(operator.lexeme.clone())),
             );
-            binary_node.add_child(NonTerminal(product_node));
+            binary_node.add_child(NonTerminal(ret));
             binary_node.add_child(Terminal(operator));
             binary_node.add_child(operands.pop_front().unwrap());
-            product_node = binary_node;
+            ret = binary_node;
         }
-
-        Ok(NonTerminal(product_node))
+        
+        NonTerminal(ret)
     }
 
     fn atom(&mut self, token: Token) -> Result<Ast, LoxError> {

@@ -8,9 +8,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/frontend/ast.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/ast.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/frontend/ast_printer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/ast_printer.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/frontend/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/parser.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -245,7 +242,7 @@
       <workItem from="1744138682243" duration="3051000" />
       <workItem from="1744218368522" duration="5549000" />
       <workItem from="1744305162822" duration="276000" />
-      <workItem from="1744307543160" duration="5315000" />
+      <workItem from="1744307543160" duration="5891000" />
     </task>
     <servers />
   </component>
