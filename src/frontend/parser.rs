@@ -26,7 +26,39 @@ impl Parser {
             "expected token but got none".to_string(),
         ))?;
 
-        self.sum(token)
+        self.comparison(token)
+    }
+
+    fn comparison(&mut self, token: Token) -> Result<Ast, LoxError> {
+        let mut operands = VecDeque::new();
+        let mut operators = VecDeque::new();
+
+        let mut next_token = token;
+
+        loop {
+            let operand = self.sum(next_token)?;
+            operands.push_back(operand);
+
+            match self.peek() {
+                Some(token) => match token.token_type {
+                    TokenType::Greater 
+                    | TokenType::GreaterEqual
+                    | TokenType::Less 
+                    | TokenType::LessEqual => {}
+                    _ => break,
+                },
+                None => break,
+            }
+
+            let operator = self.advance()?.unwrap();
+            operators.push_back(operator);
+
+            next_token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
+                "expected operand but got none".to_string(),
+            ))?;
+        }
+
+        Ok(Parser::left_assoc_bin_ast(&mut operands, &mut operators))
     }
 
     fn sum(&mut self, token: Token) -> Result<Ast, LoxError> {
