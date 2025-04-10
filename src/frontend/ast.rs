@@ -4,6 +4,7 @@ use std::collections::HashMap;
 pub enum AstType {
     Group,
     Unary,
+    Binary,
 }
 
 pub enum AstValue {

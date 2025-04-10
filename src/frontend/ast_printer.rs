@@ -19,6 +19,7 @@ impl AstPrinter {
             Ast::NonTerminal(ast_node) => match ast_node.get_type() {
                 AstType::Group => self.str_group(ast_node),
                 AstType::Unary => self.str_unary(ast_node),
+                AstType::Binary => self.str_binary(ast_node),
             },
             Ast::Terminal(token) => match token.token_type {
                 TokenType::True | TokenType::False => self.str_boolean(token),
@@ -62,6 +63,16 @@ impl AstPrinter {
     fn str_unary(&self, unary: &AstNode) -> String {
         let children = unary.get_children();
         format!("({} {})", self.str(&children[0]), self.str(&children[1]))
+    }
+
+    fn str_binary(&self, binary: &AstNode) -> String {
+        let children = binary.get_children();
+        format!(
+            "({} {} {})",
+            self.str(&children[1]),
+            self.str(&children[0]),
+            self.str(&children[2])
+        )
     }
 }
 

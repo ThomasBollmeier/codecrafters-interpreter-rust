@@ -1,9 +1,14 @@
+use std::collections::VecDeque;
+use std::vec;
+
 use crate::common::LoxError;
 use crate::frontend::ast::Ast::{NonTerminal, Terminal};
 use crate::frontend::ast::{Ast, AstNode, AstType};
 use crate::frontend::scanner::Scanner;
 use crate::frontend::stream::{BufferedStream, CharStream};
 use crate::frontend::tokens::{Token, TokenType};
+
+use super::ast::AstValue;
 
 pub struct Parser {
     token_stream: BufferedStream<Token, LoxError>,
@@ -21,6 +26,64 @@ impl Parser {
             "expected token but got none".to_string(),
         ))?;
 
+        self.product(token)
+    }
+
+    fn product(&mut self, token: Token) -> Result<Ast, LoxError> {
+        let mut operands = VecDeque::new();
+        let mut operators = VecDeque::new();
+
+        let mut next_token = token;
+
+        loop {
+            let operand = self.atom(next_token)?;
+            operands.push_back(operand);
+
+            match self.peek() {
+                Some(token) => match token.token_type {
+                    TokenType::Star | TokenType::Slash => {}
+                    _ => break,
+                },
+                None => break,
+            }
+
+            let operator = self.advance()?.unwrap();
+            operators.push_back(operator);
+
+            next_token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
+                "expected operand but got none".to_string(),
+            ))?;
+        }
+
+        if operands.len() == 1 {
+            return Ok(operands.pop_front().unwrap());
+        }
+
+        let mut operator = operators.pop_front().unwrap();
+        let mut product_node = AstNode::new(
+            AstType::Binary,
+            Some(AstValue::Str(operator.lexeme.clone())),
+        );
+        product_node.add_child(operands.pop_front().unwrap());
+        product_node.add_child(Terminal(operator));
+        product_node.add_child(operands.pop_front().unwrap());
+
+        while !operators.is_empty() {
+            operator = operators.pop_front().unwrap();
+            let mut binary_node = AstNode::new(
+                AstType::Binary,
+                Some(AstValue::Str(operator.lexeme.clone())),
+            );
+            binary_node.add_child(NonTerminal(product_node));
+            binary_node.add_child(Terminal(operator));
+            binary_node.add_child(operands.pop_front().unwrap());
+            product_node = binary_node;
+        }
+
+        Ok(NonTerminal(product_node))
+    }
+
+    fn atom(&mut self, token: Token) -> Result<Ast, LoxError> {
         match token.token_type {
             TokenType::True
             | TokenType::False
@@ -45,9 +108,16 @@ impl Parser {
     fn unary(&mut self, operator: Token) -> Result<Ast, LoxError> {
         let mut unary_node = AstNode::new(AstType::Unary, None);
         unary_node.add_child(Terminal(operator));
-        unary_node.add_child(self.expression()?);
+        let next_token = self.advance()?.ok_or(
+            LoxError::new_in_parser_ctx("expected token but got none".to_string())
+        )?;
+        unary_node.add_child(self.atom(next_token)?);
 
         Ok(NonTerminal(unary_node))
+    }
+
+    fn peek(&mut self) -> Option<&Token> {
+        self.token_stream.peek()
     }
 
     fn advance(&mut self) -> Result<Option<Token>, LoxError> {
@@ -56,7 +126,7 @@ impl Parser {
 
     fn consume(&mut self, expected: &Vec<TokenType>) -> Result<Token, LoxError> {
         let next_token = self.token_stream.peek().ok_or(LoxError::new_in_parser_ctx(
-            "expected token, but got none".to_string(),
+            "expected token but got none".to_string(),
         ))?;
 
         let mut found = false;
@@ -105,5 +175,17 @@ mod tests {
 
         let ast_printer = AstPrinter::new();
         assert_eq!("(! true)", ast_printer.str(&result.unwrap()))
+    }
+
+    #[test]
+    fn binary() {
+        let result = parse_expression("(39 * -22 / (43 * 54))");
+        assert!(result.is_ok());
+
+        let ast_printer = AstPrinter::new();
+        assert_eq!(
+            "(group (/ (* 39.0 (- 22.0)) (group (* 43.0 54.0))))",
+            ast_printer.str(&result.unwrap())
+        )
     }
 }
