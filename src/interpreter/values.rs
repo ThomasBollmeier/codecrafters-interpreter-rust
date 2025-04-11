@@ -4,6 +4,8 @@ use std::fmt::{Display, Formatter};
 pub enum Value {
     Nil,
     Boolean(bool),
+    Number(f64),
+    Str(String),
 }
 
 impl Display for Value {
@@ -11,6 +13,8 @@ impl Display for Value {
         match self {
             Value::Nil => write!(f, "nil"),
             Value::Boolean(bool) => write!(f, "{}", bool),
+            Value::Number(num) => write!(f, "{}", num),
+            Value::Str(s) => write!(f, "{}", s),
         }
     }
 }

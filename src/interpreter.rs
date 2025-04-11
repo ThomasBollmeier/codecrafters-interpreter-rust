@@ -3,7 +3,7 @@ use crate::frontend::ast::{Ast, AstVisitor};
 use crate::frontend::parser::Parser;
 use crate::frontend::scanner::Scanner;
 use crate::frontend::stream::CharStream;
-use crate::frontend::tokens::TokenType;
+use crate::frontend::tokens::{Literal, TokenType};
 use crate::interpreter::values::Value;
 
 pub mod values;
@@ -34,6 +34,10 @@ impl Interpreter {
             Err(err) => Err(err.clone()),
         }
     }
+    
+    fn error(msg: &str) -> Result<Value, LoxError> {
+        Err(LoxError::new_in_eval_ctx(msg.to_string()))
+    }
 }
 
 impl Default for Interpreter {
@@ -50,11 +54,23 @@ impl AstVisitor for Interpreter {
                     TokenType::Nil => Ok(Value::Nil),
                     TokenType::True => Ok(Value::Boolean(true)),
                     TokenType::False => Ok(Value::Boolean(false)),
-                    _ => Err(LoxError::new_in_eval_ctx("unsupported token".to_string())),
-                }
+                    TokenType::Number => {
+                        match token.literal {
+                            Literal::Number(num) => Ok(Value::Number(num)),
+                            _ => Self::error("invalid literal value")
+                        }    
+                    }
+                    TokenType::Str => {
+                        match &token.literal {
+                            Literal::Str(s) => Ok(Value::Str(s.clone())),
+                            _ => Self::error("invalid literal value")
+                        }
+                    }
+                    _ => Self::error("unsupported token"),
+                };
             }
             Ast::NonTerminal(_) => {
-                self.last_result = Err(LoxError::new_in_eval_ctx("not implemented".to_string()));
+                self.last_result = Self::error("not implemented");
             }
         }
     }
@@ -83,6 +99,31 @@ mod tests {
 
         assert_eq!(&format!("{}", value), "true");
     }
-    
+
+    #[test]
+    fn eval_number() {
+        let mut interpreter = Interpreter::new();
+        let value = interpreter
+            .eval("42".to_string())
+            .expect("error in evaluation");
+
+        assert_eq!(&format!("{}", value), "42");
+
+        let value = interpreter
+            .eval("3.1415".to_string())
+            .expect("error in evaluation");
+
+        assert_eq!(&format!("{}", value), "3.1415");
+    }
+
+    #[test]
+    fn eval_str() {
+        let mut interpreter = Interpreter::new();
+        let value = interpreter
+            .eval("\"Thomas\"".to_string())
+            .expect("error in evaluation");
+
+        assert_eq!(&format!("{}", value), "Thomas");
+    }
     
 }
