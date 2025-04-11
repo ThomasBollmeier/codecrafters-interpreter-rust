@@ -1,5 +1,5 @@
 use crate::common::LoxError;
-use crate::frontend::ast::{Ast, AstVisitor};
+use crate::frontend::ast::{Ast, AstType, AstVisitor};
 use crate::frontend::parser::Parser;
 use crate::frontend::scanner::Scanner;
 use crate::frontend::stream::CharStream;
@@ -69,8 +69,14 @@ impl AstVisitor for Interpreter {
                     _ => Self::error("unsupported token"),
                 };
             }
-            Ast::NonTerminal(_) => {
-                self.last_result = Self::error("not implemented");
+            Ast::NonTerminal(ast_node) => {
+                self.last_result = match ast_node.get_type() {
+                    AstType::Group => {
+                        let expr = &ast_node.get_children()[1];
+                        self.eval_ast(expr)
+                    }
+                    _ => Self::error("not implemented"),
+                };
             }
         }
     }
@@ -125,5 +131,14 @@ mod tests {
 
         assert_eq!(&format!("{}", value), "Thomas");
     }
-    
+
+    #[test]
+    fn eval_group() {
+        let mut interpreter = Interpreter::new();
+        let value = interpreter
+            .eval("(\"Thomas\")".to_string())
+            .expect("error in evaluation");
+
+        assert_eq!(&format!("{}", value), "Thomas");
+    }
 }
