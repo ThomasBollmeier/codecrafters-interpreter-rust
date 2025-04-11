@@ -26,7 +26,36 @@ impl Parser {
             "expected token but got none".to_string(),
         ))?;
 
-        self.comparison(token)
+        self.equality(token)
+    }
+
+    fn equality(&mut self, token: Token) -> Result<Ast, LoxError> {
+        let mut operands = VecDeque::new();
+        let mut operators = VecDeque::new();
+
+        let mut next_token = token;
+
+        loop {
+            let operand = self.comparison(next_token)?;
+            operands.push_back(operand);
+
+            match self.peek() {
+                Some(token) => match token.token_type {
+                    TokenType::EqualEqual | TokenType::BangEqual => {}
+                    _ => break,
+                },
+                None => break,
+            }
+
+            let operator = self.advance()?.unwrap();
+            operators.push_back(operator);
+
+            next_token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
+                "expected operand but got none".to_string(),
+            ))?;
+        }
+
+        Ok(Parser::left_assoc_bin_ast(&mut operands, &mut operators))
     }
 
     fn comparison(&mut self, token: Token) -> Result<Ast, LoxError> {
@@ -41,9 +70,9 @@ impl Parser {
 
             match self.peek() {
                 Some(token) => match token.token_type {
-                    TokenType::Greater 
+                    TokenType::Greater
                     | TokenType::GreaterEqual
-                    | TokenType::Less 
+                    | TokenType::Less
                     | TokenType::LessEqual => {}
                     _ => break,
                 },
@@ -115,10 +144,10 @@ impl Parser {
                 "expected operand but got none".to_string(),
             ))?;
         }
-        
+
         Ok(Parser::left_assoc_bin_ast(&mut operands, &mut operators))
     }
-    
+
     fn left_assoc_bin_ast(operands: &mut VecDeque<Ast>, operators: &mut VecDeque<Token>) -> Ast {
         if operands.len() == 1 {
             return operands.pop_front().unwrap();
@@ -144,7 +173,7 @@ impl Parser {
             binary_node.add_child(operands.pop_front().unwrap());
             ret = binary_node;
         }
-        
+
         NonTerminal(ret)
     }
 
@@ -173,9 +202,9 @@ impl Parser {
     fn unary(&mut self, operator: Token) -> Result<Ast, LoxError> {
         let mut unary_node = AstNode::new(AstType::Unary, None);
         unary_node.add_child(Terminal(operator));
-        let next_token = self.advance()?.ok_or(
-            LoxError::new_in_parser_ctx("expected token but got none".to_string())
-        )?;
+        let next_token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
+            "expected token but got none".to_string(),
+        ))?;
         unary_node.add_child(self.atom(next_token)?);
 
         Ok(NonTerminal(unary_node))
