@@ -1,13 +1,14 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ErrorContext {
     Lexical,
     Parser,
+    Interpreter,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LoxError {
     context: ErrorContext,
     message: String,
@@ -29,6 +30,10 @@ impl LoxError {
 
     pub fn new_in_parser_ctx(message: String) -> LoxError {
         LoxError::new(ErrorContext::Parser, message, None)
+    }
+
+    pub fn new_in_eval_ctx(message: String) -> LoxError {
+        LoxError::new(ErrorContext::Interpreter, message, None)
     }
     
     pub fn get_context(&self) -> &ErrorContext {

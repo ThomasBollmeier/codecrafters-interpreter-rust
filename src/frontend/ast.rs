@@ -70,19 +70,19 @@ pub enum Ast {
 }
 
 impl Ast {
-    pub fn accept(&self, visitor: &impl AstVisitor) {
+    pub fn accept(&self, visitor: &mut impl AstVisitor) {
         visitor.visit(self);
     }
 
-    pub fn accept_mut(&mut self, visitor: &impl AstVisitorMut) {
+    pub fn accept_mut(&mut self, visitor: &mut impl AstVisitorMut) {
         visitor.visit(self);
     }
 }
 
 pub trait AstVisitor {
-    fn visit(&self, ast: &Ast);
+    fn visit(&mut self, ast: &Ast);
 }
 
 pub trait AstVisitorMut {
-    fn visit(&self, ast: &mut Ast);
+    fn visit(&mut self, ast: &mut Ast);
 }

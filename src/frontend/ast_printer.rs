@@ -77,7 +77,7 @@ impl AstPrinter {
 }
 
 impl AstVisitor for AstPrinter {
-    fn visit(&self, ast: &Ast) {
+    fn visit(&mut self, ast: &Ast) {
         let s = self.str(ast);
         println!("{s}");
     }
