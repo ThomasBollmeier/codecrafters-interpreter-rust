@@ -2,7 +2,6 @@ use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process::ExitCode;
-use codecrafters_interpreter::common::ErrorContext;
 use codecrafters_interpreter::frontend::ast_printer::AstPrinter;
 use codecrafters_interpreter::frontend::parser::Parser;
 use codecrafters_interpreter::frontend::scanner::Scanner;
@@ -51,21 +50,14 @@ fn main() -> ExitCode {
             let scanner = Scanner::new(CharStream::new(file_contents));
             let mut parser = Parser::new(scanner);
 
-            let exit_code = match parser.expression() {
+            match parser.expression() {
                 Ok(ast) => {
                     let ast_printer = AstPrinter::new();
                     ast.accept(&ast_printer);
                     ExitCode::SUCCESS
                 },
-                Err(err) => {
-                    match err.get_context() {
-                        ErrorContext::Lexical => ExitCode::from(65),
-                        ErrorContext::Parser => ExitCode::from(70),
-                    }
-                }
-            };
-
-            exit_code
+                Err(_) => ExitCode::from(65),
+            }
         }
         _ => {
             eprintln!("Unknown command: {}", command);
