@@ -76,7 +76,7 @@ fn parse(code: String) -> ExitCode {
 }
 
 fn evaluate(code: String) -> ExitCode {
-    let mut interpreter = Interpreter::new();
+    let interpreter = Interpreter::new();
     let result = interpreter.eval(code);
     
     match result {

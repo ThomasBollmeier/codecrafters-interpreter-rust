@@ -8,7 +8,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/interpreter.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,40 +38,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Cargo.Run codecrafters-interpreter (1).executor": "Debug",
-    "Cargo.Run codecrafters-interpreter (2).executor": "Debug",
-    "Cargo.Run codecrafters-interpreter.executor": "Run",
-    "Cargo.Test frontend::parser::tests::binary.executor": "Run",
-    "Cargo.Test frontend::parser::tests::group.executor": "Run",
-    "Cargo.Test frontend::parser::tests::unary.executor": "Run",
-    "Cargo.Test frontend::stream::tests::test_buffered_stream_advance.executor": "Run",
-    "Cargo.Test frontend::stream::tests::test_buffered_stream_peek.executor": "Run",
-    "Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many.executor": "Run",
-    "Cargo.Test interpreter::tests::eval_bool.executor": "Run",
-    "Cargo.Test interpreter::tests::eval_group.executor": "Run",
-    "Cargo.Test interpreter::tests::eval_nil.executor": "Run",
-    "Cargo.Test interpreter::tests::eval_number.executor": "Run",
-    "Cargo.Test interpreter::tests::eval_str.executor": "Run",
-    "Cargo.Test stream::tests.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.rust.reset.selective.auto.import": "true",
-    "git-widget-placeholder": "master",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
-    "org.rust.disableDetachedFileInspection/home/drbolle/codecrafters/codecrafters-interpreter-rust/src/common.rs": "true",
-    "org.rust.first.attach.projects": "true",
-    "settings.editor.selected.configurable": "language.rust.rustfmt",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Cargo.Run codecrafters-interpreter (1).executor&quot;: &quot;Debug&quot;,
+    &quot;Cargo.Run codecrafters-interpreter (2).executor&quot;: &quot;Debug&quot;,
+    &quot;Cargo.Run codecrafters-interpreter.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test frontend::parser::tests::binary.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test frontend::parser::tests::group.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test frontend::parser::tests::unary.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test frontend::stream::tests::test_buffered_stream_advance.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test frontend::stream::tests::test_buffered_stream_peek.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test interpreter::tests::eval_bool.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test interpreter::tests::eval_group.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test interpreter::tests::eval_nil.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test interpreter::tests::eval_number.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test interpreter::tests::eval_str.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test stream::tests.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/home/drbolle/codecrafters/codecrafters-interpreter-rust/src/common.rs&quot;: &quot;true&quot;,
+    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;language.rust.rustfmt&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RsExternalLinterProjectSettings">
     <option name="runOnTheFly" value="true" />
     <option name="tool" value="Clippy" />
@@ -247,7 +247,8 @@
       <workItem from="1744305162822" duration="276000" />
       <workItem from="1744307543160" duration="6196000" />
       <workItem from="1744349920247" duration="3242000" />
-      <workItem from="1744394147895" duration="2797000" />
+      <workItem from="1744394147895" duration="4132000" />
+      <workItem from="1744442131616" duration="935000" />
     </task>
     <servers />
   </component>
