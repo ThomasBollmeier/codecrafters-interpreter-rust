@@ -1,5 +1,5 @@
 use crate::common::LoxError;
-use crate::frontend::ast::{Ast, AstNode, AstType};
+use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
 use crate::frontend::parser::Parser;
 use crate::frontend::scanner::Scanner;
 use crate::frontend::stream::CharStream;
@@ -47,7 +47,7 @@ impl Interpreter {
                     self.eval_ast(expr)
                 }
                 AstType::Unary => self.eval_unary(ast_node),
-                _ => Self::error("not implemented"),
+                AstType::Binary => self.eval_binary(ast_node),
             },
         }
     }
@@ -69,6 +69,37 @@ impl Interpreter {
             },
             TokenType::Bang => Ok(Value::Boolean(!Self::is_truthy(&value))),
             _ => Self::error("invalid unary operator"),
+        }
+    }
+
+    fn eval_binary(&self, ast_node: &AstNode) -> InterpreterResult {
+        let operator = match ast_node.get_value() {
+            Some(AstValue::Str(op)) => op.as_str(),
+            _ => return Self::error("expected binary operator")
+        };
+
+        let children = ast_node.get_children();
+        let left = match self.eval_ast(&children[0])? {
+            Value::Number(n) => n,
+            _ => return Self::error("operand must be a number"),
+        };
+        let right = match self.eval_ast(&children[2])? {
+            Value::Number(n) => n,
+            _ => return Self::error("operand must be a number"),
+        };
+
+        match operator {
+            "+" => Ok(Value::Number(left + right)),
+            "-" => Ok(Value::Number(left - right)),
+            "*" => Ok(Value::Number(left * right)),
+            "/" => {
+                if right > f64::EPSILON {
+                    Ok(Value::Number(left / right))
+                } else {
+                    Self::error("cannot divide by zero")
+                }
+            }
+            _ => Self::error("unsupported binary operator")
         }
     }
 
@@ -170,4 +201,45 @@ mod tests {
 
         assert_eq!(&format!("{}", value), "false");
     }
+
+    #[test]
+    fn eval_add() {
+        let interpreter = Interpreter::new();
+        let value = interpreter
+            .eval("20 + 22".to_string())
+            .expect("error in evaluation");
+
+        assert_eq!(&format!("{}", value), "42");
+    }
+
+    #[test]
+    fn eval_subtract() {
+        let interpreter = Interpreter::new();
+        let value = interpreter
+            .eval("20 - 22".to_string())
+            .expect("error in evaluation");
+
+        assert_eq!(&format!("{}", value), "-2");
+    }
+
+    #[test]
+    fn eval_multiply() {
+        let interpreter = Interpreter::new();
+        let value = interpreter
+            .eval("7.0 * 6".to_string())
+            .expect("error in evaluation");
+
+        assert_eq!(&format!("{}", value), "42");
+    }
+
+    #[test]
+    fn eval_divide() {
+        let interpreter = Interpreter::new();
+        let value = interpreter
+            .eval("84 / 2".to_string())
+            .expect("error in evaluation");
+
+        assert_eq!(&format!("{}", value), "42");
+    }
+
 }
