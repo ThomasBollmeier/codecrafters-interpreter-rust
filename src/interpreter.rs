@@ -88,64 +88,79 @@ impl Interpreter {
             _ => (false, false),
         };
 
-        if operator == "+" {
-            if !both_nums && !both_strings {
-                return Self::error("operands must be all numbers or all strings");
-            }
-            if both_nums {
-                let a = match left {
-                    Value::Number(num) => num,
-                    _ => panic!("must not happen"),
-                };
-                let b = match right {
-                    Value::Number(num) => num,
-                    _ => panic!("must not happen"),
-                };
-                Ok(Value::Number(a + b))
-            } else {
-                let a = match left {
-                    Value::Str(s) => s,
-                    _ => panic!("must not happen"),
-                };
-                let b = match right {
-                    Value::Str(s) => s,
-                    _ => panic!("must not happen"),
-                };
-                let mut s = String::new();
-                s.push_str(&a);
-                s.push_str(&b);
-                Ok(Value::Str(s))
-            }
-        } else {
-            if !both_nums {
-                return Self::error("operands must be numbers");
-            }
-
-            let a = match left {
-                Value::Number(num) => num,
-                _ => panic!("must not happen"),
-            };
-            let b = match right {
-                Value::Number(num) => num,
-                _ => panic!("must not happen"),
-            };
-
-            match operator {
-                "-" => Ok(Value::Number(a - b)),
-                "*" => Ok(Value::Number(a * b)),
-                "/" => {
-                    if b > f64::EPSILON {
-                        Ok(Value::Number(a / b))
-                    } else {
-                        Self::error("cannot divide by zero")
-                    }
+        match operator {
+            "+" => {
+                if !both_nums && !both_strings {
+                    return Self::error("operands must be all numbers or all strings");
                 }
-                ">" => Ok(Value::Boolean(a > b)),
-                ">=" => Ok(Value::Boolean(a >= b)),
-                "<" => Ok(Value::Boolean(a < b)),
-                "<=" => Ok(Value::Boolean(a <= b)),
-                _ => Self::error("unsupported binary operator"),
+                if both_nums {
+                    let a = match left {
+                        Value::Number(num) => num,
+                        _ => panic!("must not happen"),
+                    };
+                    let b = match right {
+                        Value::Number(num) => num,
+                        _ => panic!("must not happen"),
+                    };
+                    Ok(Value::Number(a + b))
+                } else {
+                    let a = match left {
+                        Value::Str(s) => s,
+                        _ => panic!("must not happen"),
+                    };
+                    let b = match right {
+                        Value::Str(s) => s,
+                        _ => panic!("must not happen"),
+                    };
+                    let mut s = String::new();
+                    s.push_str(&a);
+                    s.push_str(&b);
+                    Ok(Value::Str(s))
+                }
             }
+            "==" => Ok(Value::Boolean(Self::are_equal(&left, &right))),
+            "!=" => Ok(Value::Boolean(!Self::are_equal(&left, &right))),
+            _ => {
+                if !both_nums {
+                    return Self::error("operands must be numbers");
+                }
+
+                let a = match left {
+                    Value::Number(num) => num,
+                    _ => panic!("must not happen"),
+                };
+                let b = match right {
+                    Value::Number(num) => num,
+                    _ => panic!("must not happen"),
+                };
+
+                match operator {
+                    "-" => Ok(Value::Number(a - b)),
+                    "*" => Ok(Value::Number(a * b)),
+                    "/" => {
+                        if b > f64::EPSILON {
+                            Ok(Value::Number(a / b))
+                        } else {
+                            Self::error("cannot divide by zero")
+                        }
+                    }
+                    ">" => Ok(Value::Boolean(a > b)),
+                    ">=" => Ok(Value::Boolean(a >= b)),
+                    "<" => Ok(Value::Boolean(a < b)),
+                    "<=" => Ok(Value::Boolean(a <= b)),
+                    _ => Self::error("unsupported binary operator"),
+                }
+            }
+        }
+    }
+
+    fn are_equal(a: &Value, b: &Value) -> bool {
+        match (a, b) {
+            (Value::Nil, Value::Nil) => true,
+            (Value::Boolean(a), Value::Boolean(b)) => a == b,
+            (Value::Number(a), Value::Number(b)) => (a - b).abs() < f64::EPSILON,
+            (Value::Str(a), Value::Str(b)) => a == b,
+            _ => false
         }
     }
 
