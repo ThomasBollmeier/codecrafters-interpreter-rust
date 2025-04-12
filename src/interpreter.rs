@@ -140,6 +140,10 @@ impl Interpreter {
                         Self::error("cannot divide by zero")
                     }
                 }
+                ">" => Ok(Value::Boolean(a > b)),
+                ">=" => Ok(Value::Boolean(a >= b)),
+                "<" => Ok(Value::Boolean(a < b)),
+                "<=" => Ok(Value::Boolean(a <= b)),
                 _ => Self::error("unsupported binary operator"),
             }
         }
