@@ -75,31 +75,73 @@ impl Interpreter {
     fn eval_binary(&self, ast_node: &AstNode) -> InterpreterResult {
         let operator = match ast_node.get_value() {
             Some(AstValue::Str(op)) => op.as_str(),
-            _ => return Self::error("expected binary operator")
+            _ => return Self::error("expected binary operator"),
         };
 
         let children = ast_node.get_children();
-        let left = match self.eval_ast(&children[0])? {
-            Value::Number(n) => n,
-            _ => return Self::error("operand must be a number"),
-        };
-        let right = match self.eval_ast(&children[2])? {
-            Value::Number(n) => n,
-            _ => return Self::error("operand must be a number"),
+        let left = self.eval_ast(&children[0])?;
+        let right = self.eval_ast(&children[2])?;
+
+        let (both_nums, both_strings) = match (&left, &right) {
+            (Value::Number(_), Value::Number(_)) => (true, false),
+            (Value::Str(_), Value::Str(_)) => (false, true),
+            _ => (false, false),
         };
 
-        match operator {
-            "+" => Ok(Value::Number(left + right)),
-            "-" => Ok(Value::Number(left - right)),
-            "*" => Ok(Value::Number(left * right)),
-            "/" => {
-                if right > f64::EPSILON {
-                    Ok(Value::Number(left / right))
-                } else {
-                    Self::error("cannot divide by zero")
-                }
+        if operator == "+" {
+            if !both_nums && !both_strings {
+                return Self::error("operands must be all numbers or all strings");
             }
-            _ => Self::error("unsupported binary operator")
+            if both_nums {
+                let a = match left {
+                    Value::Number(num) => num,
+                    _ => panic!("must not happen"),
+                };
+                let b = match right {
+                    Value::Number(num) => num,
+                    _ => panic!("must not happen"),
+                };
+                Ok(Value::Number(a + b))
+            } else {
+                let a = match left {
+                    Value::Str(s) => s,
+                    _ => panic!("must not happen"),
+                };
+                let b = match right {
+                    Value::Str(s) => s,
+                    _ => panic!("must not happen"),
+                };
+                let mut s = String::new();
+                s.push_str(&a);
+                s.push_str(&b);
+                Ok(Value::Str(s))
+            }
+        } else {
+            if !both_nums {
+                return Self::error("operands must be numbers");
+            }
+
+            let a = match left {
+                Value::Number(num) => num,
+                _ => panic!("must not happen"),
+            };
+            let b = match right {
+                Value::Number(num) => num,
+                _ => panic!("must not happen"),
+            };
+
+            match operator {
+                "-" => Ok(Value::Number(a - b)),
+                "*" => Ok(Value::Number(a * b)),
+                "/" => {
+                    if b > f64::EPSILON {
+                        Ok(Value::Number(a / b))
+                    } else {
+                        Self::error("cannot divide by zero")
+                    }
+                }
+                _ => Self::error("unsupported binary operator"),
+            }
         }
     }
 
@@ -242,4 +284,13 @@ mod tests {
         assert_eq!(&format!("{}", value), "42");
     }
 
+    #[test]
+    fn eval_concat() {
+        let interpreter = Interpreter::new();
+        let value = interpreter
+            .eval("\"foo\" + \"bar\"".to_string())
+            .expect("error in evaluation");
+
+        assert_eq!(&format!("{}", value), "foobar");
+    }
 }
