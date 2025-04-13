@@ -20,6 +20,7 @@ impl AstPrinter {
                 AstType::Group => self.str_group(ast_node),
                 AstType::Unary => self.str_unary(ast_node),
                 AstType::Binary => self.str_binary(ast_node),
+                _ => String::new(),
             },
             Ast::Terminal(token) => match token.token_type {
                 TokenType::True | TokenType::False => self.str_boolean(token),

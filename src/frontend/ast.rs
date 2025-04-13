@@ -2,6 +2,9 @@ use crate::frontend::tokens::Token;
 use std::collections::HashMap;
 
 pub enum AstType {
+    Program,
+    PrintStmt,
+    ExprStmt,
     Group,
     Unary,
     Binary,

@@ -23,6 +23,7 @@ fn main() -> ExitCode {
         "tokenize" => tokenize(read_file(filename)),
         "parse" => parse(read_file(filename)),
         "evaluate" => evaluate(read_file(filename)),
+        "run" => run(read_file(filename)),
         _ => {
             eprintln!("Unknown command: {}", command);
             ExitCode::FAILURE
@@ -65,7 +66,7 @@ fn parse(code: String) -> ExitCode {
     let scanner = Scanner::new(CharStream::new(code));
     let mut parser = Parser::new(scanner);
 
-    match parser.expression() {
+    match parser.expression(None) {
         Ok(ast) => {
             let mut ast_printer = AstPrinter::new();
             ast.accept(&mut ast_printer);
@@ -84,6 +85,22 @@ fn evaluate(code: String) -> ExitCode {
             println!("{}", value);
             ExitCode::SUCCESS
         }
+        Err(err) => {
+            eprintln!("{}", err.get_message());
+            match err.get_context() {
+                ErrorContext::Interpreter => ExitCode::from(70),
+                _ => ExitCode::from(65),
+            }
+        }
+    }
+}
+
+fn run(code: String) -> ExitCode {
+    let interpreter = Interpreter::new();
+    let result = interpreter.run(code);
+
+    match result {
+        Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
             eprintln!("{}", err.get_message());
             match err.get_context() {

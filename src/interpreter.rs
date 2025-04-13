@@ -1,8 +1,6 @@
 use crate::common::LoxError;
 use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
-use crate::frontend::parser::Parser;
-use crate::frontend::scanner::Scanner;
-use crate::frontend::stream::CharStream;
+use crate::frontend::parser;
 use crate::frontend::tokens::{Literal, TokenType};
 use crate::interpreter::values::Value;
 
@@ -16,12 +14,14 @@ impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {}
     }
+    
+    pub fn run(&self, code: String) -> Result<(), LoxError> {
+        let ast = parser::parse_program(&code)?;
+        self.eval_ast(&ast).map(|_| {()})
+    }
 
     pub fn eval(&self, code: String) -> InterpreterResult {
-        let scanner = Scanner::new(CharStream::new(code));
-        let mut parser = Parser::new(scanner);
-        let ast = parser.expression()?;
-
+        let ast = parser::parse_expression(&code)?;
         self.eval_ast(&ast)
     }
 
@@ -42,14 +42,38 @@ impl Interpreter {
                 _ => Self::error("unsupported token"),
             },
             Ast::NonTerminal(ast_node) => match ast_node.get_type() {
+                AstType::Program => self.eval_program(ast_node),
+                AstType::PrintStmt => self.eval_print_stmt(ast_node),
+                AstType::ExprStmt => self.eval_expr_stmt(ast_node),
                 AstType::Group => {
                     let expr = &ast_node.get_children()[1];
                     self.eval_ast(expr)
                 }
                 AstType::Unary => self.eval_unary(ast_node),
                 AstType::Binary => self.eval_binary(ast_node),
+                //_ => Self::error("not implemented")
             },
         }
+    }
+
+    fn eval_program(&self, ast_node: &AstNode) -> InterpreterResult {
+        let mut result = Ok(Value::Nil);
+        for stmt in ast_node.get_children() {
+            result = Ok(self.eval_ast(stmt)?);
+        }
+
+        result
+    }
+
+    fn eval_print_stmt(&self, ast_node: &AstNode) -> InterpreterResult {
+        let value = self.eval_ast(&ast_node.get_children()[1])?;
+        println!("{value}");
+        Ok(Value::Nil)
+    }
+
+    fn eval_expr_stmt(&self, ast_node: &AstNode) -> InterpreterResult {
+        self.eval_ast(&ast_node.get_children()[0])?;
+        Ok(Value::Nil)
     }
 
     fn eval_unary(&self, ast_node: &AstNode) -> InterpreterResult {

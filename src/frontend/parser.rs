@@ -1,12 +1,11 @@
-use std::collections::VecDeque;
-use std::vec;
-
 use crate::common::LoxError;
 use crate::frontend::ast::Ast::{NonTerminal, Terminal};
 use crate::frontend::ast::{Ast, AstNode, AstType};
 use crate::frontend::scanner::Scanner;
 use crate::frontend::stream::{BufferedStream, CharStream};
 use crate::frontend::tokens::{Token, TokenType};
+use std::collections::VecDeque;
+use std::vec;
 
 use super::ast::AstValue;
 
@@ -21,10 +20,50 @@ impl Parser {
         }
     }
 
-    pub fn expression(&mut self) -> Result<Ast, LoxError> {
-        let token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
-            "expected token but got none".to_string(),
-        ))?;
+    pub fn program(&mut self) -> Result<Ast, LoxError> {
+        let mut program_node = AstNode::new(AstType::Program, None);
+
+        while let Some(token) = self.advance()? {
+            let stmt = self.statement(token)?;
+            program_node.add_child(stmt);
+        }
+
+        Ok(NonTerminal(program_node))
+    }
+
+    pub fn statement(&mut self, token: Token) -> Result<Ast, LoxError> {
+        match token.token_type {
+            TokenType::Print => self.print_stmt(token),
+            _ => self.expression_stmt(token),
+        }
+    }
+
+    pub fn print_stmt(&mut self, token: Token) -> Result<Ast, LoxError> {
+        let mut print_node = AstNode::new(AstType::PrintStmt, None);
+        print_node.add_child(Terminal(token));
+        print_node.add_child(self.expression(None)?);
+        let semicolon = self.consume(&vec![TokenType::Semicolon])?;
+        print_node.add_child(Terminal(semicolon));
+
+        Ok(NonTerminal(print_node))
+    }
+
+    pub fn expression_stmt(&mut self, token: Token) -> Result<Ast, LoxError> {
+        let mut stmt_node = AstNode::new(AstType::ExprStmt, None);
+        stmt_node.add_child(self.expression(Some(token))?);
+        let semicolon = self.consume(&vec![TokenType::Semicolon])?;
+        stmt_node.add_child(Terminal(semicolon));
+
+        Ok(NonTerminal(stmt_node))
+    }
+
+    pub fn expression(&mut self, start_token: Option<Token>) -> Result<Ast, LoxError> {
+        let token = match start_token {
+            Some(token) => token,
+            None => self
+                .advance()?
+                .ok_or(Self::error("expected token but got none"))?,
+        };
 
         self.equality(token)
     }
@@ -50,9 +89,9 @@ impl Parser {
             let operator = self.advance()?.unwrap();
             operators.push_back(operator);
 
-            next_token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
-                "expected operand but got none".to_string(),
-            ))?;
+            next_token = self
+                .advance()?
+                .ok_or(Self::error("expected operand but got none"))?;
         }
 
         Ok(Parser::left_assoc_bin_ast(&mut operands, &mut operators))
@@ -82,9 +121,9 @@ impl Parser {
             let operator = self.advance()?.unwrap();
             operators.push_back(operator);
 
-            next_token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
-                "expected operand but got none".to_string(),
-            ))?;
+            next_token = self
+                .advance()?
+                .ok_or(Self::error("expected operand but got none"))?;
         }
 
         Ok(Parser::left_assoc_bin_ast(&mut operands, &mut operators))
@@ -111,9 +150,9 @@ impl Parser {
             let operator = self.advance()?.unwrap();
             operators.push_back(operator);
 
-            next_token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
-                "expected operand but got none".to_string(),
-            ))?;
+            next_token = self
+                .advance()?
+                .ok_or(Self::error("expected operand but got none"))?;
         }
 
         Ok(Parser::left_assoc_bin_ast(&mut operands, &mut operators))
@@ -140,9 +179,9 @@ impl Parser {
             let operator = self.advance()?.unwrap();
             operators.push_back(operator);
 
-            next_token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
-                "expected operand but got none".to_string(),
-            ))?;
+            next_token = self
+                .advance()?
+                .ok_or(Self::error("expected operand but got none"))?;
         }
 
         Ok(Parser::left_assoc_bin_ast(&mut operands, &mut operators))
@@ -186,14 +225,14 @@ impl Parser {
             | TokenType::Str => Ok(Terminal(token)),
             TokenType::LeftParen => self.group(token),
             TokenType::Bang | TokenType::Minus => self.unary(token),
-            _ => Err(LoxError::new_in_parser_ctx("unexpected token".to_string())),
+            _ => Err(Self::error("unexpected token")),
         }
     }
 
     fn group(&mut self, open_paren: Token) -> Result<Ast, LoxError> {
         let mut group_node = AstNode::new(AstType::Group, None);
         group_node.add_child(Terminal(open_paren));
-        group_node.add_child(self.expression()?);
+        group_node.add_child(self.expression(None)?);
         group_node.add_child(Terminal(self.consume(&vec![TokenType::RightParen])?));
 
         Ok(NonTerminal(group_node))
@@ -202,9 +241,9 @@ impl Parser {
     fn unary(&mut self, operator: Token) -> Result<Ast, LoxError> {
         let mut unary_node = AstNode::new(AstType::Unary, None);
         unary_node.add_child(Terminal(operator));
-        let next_token = self.advance()?.ok_or(LoxError::new_in_parser_ctx(
-            "expected token but got none".to_string(),
-        ))?;
+        let next_token = self
+            .advance()?
+            .ok_or(Self::error("expected token but got none"))?;
         unary_node.add_child(self.atom(next_token)?);
 
         Ok(NonTerminal(unary_node))
@@ -219,9 +258,10 @@ impl Parser {
     }
 
     fn consume(&mut self, expected: &Vec<TokenType>) -> Result<Token, LoxError> {
-        let next_token = self.token_stream.peek().ok_or(LoxError::new_in_parser_ctx(
-            "expected token but got none".to_string(),
-        ))?;
+        let next_token = self
+            .token_stream
+            .peek()
+            .ok_or(Self::error("expected token but got none"))?;
 
         let mut found = false;
         for exp in expected {
@@ -235,17 +275,25 @@ impl Parser {
             let token = self.token_stream.advance()?.unwrap();
             Ok(token)
         } else {
-            Err(LoxError::new_in_parser_ctx(
-                "token has unexpected type".to_string(),
-            ))
+            Err(Self::error("token has unexpected type"))
         }
+    }
+
+    fn error(msg: &str) -> LoxError {
+        LoxError::new_in_parser_ctx(msg.to_string())
     }
 }
 
 pub fn parse_expression(code: &str) -> Result<Ast, LoxError> {
     let scanner = Scanner::new(CharStream::new(code.to_string()));
     let mut parser = Parser::new(scanner);
-    parser.expression()
+    parser.expression(None)
+}
+
+pub fn parse_program(code: &str) -> Result<Ast, LoxError> {
+    let scanner = Scanner::new(CharStream::new(code.to_string()));
+    let mut parser = Parser::new(scanner);
+    parser.program()
 }
 
 #[cfg(test)]
@@ -282,4 +330,16 @@ mod tests {
             ast_printer.str(&result.unwrap())
         )
     }
+
+    #[test]
+    fn print_statement() {
+        let result = parse_program(
+            r#"
+            print "Hallo Welt!";
+            "#
+        );
+
+        assert!(result.is_ok());
+    }
+
 }
