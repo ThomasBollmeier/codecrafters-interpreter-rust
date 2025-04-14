@@ -24,21 +24,54 @@ impl Parser {
         let mut program_node = AstNode::new(AstType::Program, None);
 
         while let Some(token) = self.advance()? {
-            let stmt = self.statement(token)?;
+            let stmt = self.declaration(token)?;
             program_node.add_child(stmt);
         }
 
         Ok(NonTerminal(program_node))
     }
 
-    pub fn statement(&mut self, token: Token) -> Result<Ast, LoxError> {
+    fn declaration(&mut self, token: Token) -> Result<Ast, LoxError> {
+        match token.token_type {
+            TokenType::Var => self.var_decl(token),
+            _ => self.statement(token),
+        }
+    }
+
+    fn var_decl(&mut self, var_token: Token) -> Result<Ast, LoxError> {
+        let ident = self.consume(&vec![TokenType::Identifier])?;
+        let mut decl_node =
+            AstNode::new(AstType::VarDecl, Some(AstValue::Str(ident.lexeme.clone())));
+        decl_node.add_child(Terminal(var_token));
+        decl_node.add_child(Terminal(ident));
+        let next_token = self
+            .advance()?
+            .ok_or(Self::error("expected token, but got none"))?;
+        match &next_token.token_type {
+            TokenType::Semicolon => {
+                decl_node.add_child(Terminal(next_token));
+            }
+            TokenType::Equal => {
+                decl_node.add_child(Terminal(next_token));
+                let init_expr = self.expression(None)?;
+                decl_node.add_child(init_expr);
+                let semicolon = self.consume(&vec![TokenType::Semicolon])?;
+                decl_node.add_child(Terminal(semicolon));
+            }
+            _ => { return Err(Self::error("unexpected token type")); }
+        }
+
+        Ok(NonTerminal(decl_node))
+    }
+
+    fn statement(&mut self, token: Token) -> Result<Ast, LoxError> {
         match token.token_type {
             TokenType::Print => self.print_stmt(token),
             _ => self.expression_stmt(token),
         }
     }
 
-    pub fn print_stmt(&mut self, token: Token) -> Result<Ast, LoxError> {
+    fn print_stmt(&mut self, token: Token) -> Result<Ast, LoxError> {
         let mut print_node = AstNode::new(AstType::PrintStmt, None);
         print_node.add_child(Terminal(token));
         print_node.add_child(self.expression(None)?);
@@ -48,7 +81,7 @@ impl Parser {
         Ok(NonTerminal(print_node))
     }
 
-    pub fn expression_stmt(&mut self, token: Token) -> Result<Ast, LoxError> {
+    fn expression_stmt(&mut self, token: Token) -> Result<Ast, LoxError> {
         let mut stmt_node = AstNode::new(AstType::ExprStmt, None);
         stmt_node.add_child(self.expression(Some(token))?);
         let semicolon = self.consume(&vec![TokenType::Semicolon])?;
@@ -222,7 +255,8 @@ impl Parser {
             | TokenType::False
             | TokenType::Nil
             | TokenType::Number
-            | TokenType::Str => Ok(Terminal(token)),
+            | TokenType::Str
+            | TokenType::Identifier => Ok(Terminal(token)),
             TokenType::LeftParen => self.group(token),
             TokenType::Bang | TokenType::Minus => self.unary(token),
             _ => Err(Self::error("unexpected token")),
@@ -336,10 +370,9 @@ mod tests {
         let result = parse_program(
             r#"
             print "Hallo Welt!";
-            "#
+            "#,
         );
 
         assert!(result.is_ok());
     }
-
 }

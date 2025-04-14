@@ -2,22 +2,28 @@ use crate::common::LoxError;
 use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
 use crate::frontend::parser;
 use crate::frontend::tokens::{Literal, TokenType};
+use crate::interpreter::env::{Env, EnvRef};
 use crate::interpreter::values::Value;
 
+mod env;
 pub mod values;
 
 pub type InterpreterResult = Result<Value, LoxError>;
 
-pub struct Interpreter {}
+pub struct Interpreter {
+    env: EnvRef,
+}
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter {}
+        Interpreter {
+            env: Env::new_ref(None),
+        }
     }
-    
+
     pub fn run(&self, code: String) -> Result<(), LoxError> {
         let ast = parser::parse_program(&code)?;
-        self.eval_ast(&ast).map(|_| {()})
+        self.eval_ast(&ast).map(|_| {})
     }
 
     pub fn eval(&self, code: String) -> InterpreterResult {
@@ -39,10 +45,12 @@ impl Interpreter {
                     Literal::Str(s) => Ok(Value::Str(s.clone())),
                     _ => Self::error("invalid literal value"),
                 },
+                TokenType::Identifier => self.eval_identifier(&token.lexeme),
                 _ => Self::error("unsupported token"),
             },
             Ast::NonTerminal(ast_node) => match ast_node.get_type() {
                 AstType::Program => self.eval_program(ast_node),
+                AstType::VarDecl => self.eval_var_decl(ast_node),
                 AstType::PrintStmt => self.eval_print_stmt(ast_node),
                 AstType::ExprStmt => self.eval_expr_stmt(ast_node),
                 AstType::Group => {
@@ -63,6 +71,23 @@ impl Interpreter {
         }
 
         result
+    }
+
+    fn eval_var_decl(&self, ast_node: &AstNode) -> InterpreterResult {
+        let var_name = match ast_node.get_value() {
+            Some(AstValue::Str(name)) => name.clone(),
+            _ => return Self::error("invalid ast value"),
+        };
+
+        let children = ast_node.get_children();
+        let init_value = if children.len() == 5 {
+            self.eval_ast(&children[3])?
+        } else {
+            Value::Nil
+        };
+        self.env.borrow_mut().set_value(var_name, init_value);
+
+        Ok(Value::Nil)
     }
 
     fn eval_print_stmt(&self, ast_node: &AstNode) -> InterpreterResult {
@@ -178,13 +203,20 @@ impl Interpreter {
         }
     }
 
+    fn eval_identifier(&self, identifier: &str) -> InterpreterResult {
+        match self.env.borrow().get_value(identifier) {
+            Some(value) => Ok(value),
+            None => Self::error(&format!("identifier {identifier} is unknown")),
+        }
+    }
+
     fn are_equal(a: &Value, b: &Value) -> bool {
         match (a, b) {
             (Value::Nil, Value::Nil) => true,
             (Value::Boolean(a), Value::Boolean(b)) => a == b,
             (Value::Number(a), Value::Number(b)) => (a - b).abs() < f64::EPSILON,
             (Value::Str(a), Value::Str(b)) => a == b,
-            _ => false
+            _ => false,
         }
     }
 
