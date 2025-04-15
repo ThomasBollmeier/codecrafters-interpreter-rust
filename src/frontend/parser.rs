@@ -67,6 +67,7 @@ impl Parser {
     fn statement(&mut self, token: Token) -> Result<Ast, LoxError> {
         match token.token_type {
             TokenType::Print => self.print_stmt(token),
+            TokenType::LeftBrace => self.block(token),
             _ => self.expression_stmt(token),
         }
     }
@@ -79,6 +80,29 @@ impl Parser {
         print_node.add_child(Terminal(semicolon));
 
         Ok(NonTerminal(print_node))
+    }
+    
+    fn block(&mut self, left_brace: Token) -> Result<Ast, LoxError> {
+        let mut block_node = AstNode::new(AstType::Block, None);
+        block_node.add_child(Terminal(left_brace));
+        
+        loop {
+            let next_token = match self.advance()? {
+                Some(token) => token,
+                None => return Err(Self::error("expected token, but got none")),
+            };
+            match &next_token.token_type {
+                TokenType::RightBrace => {
+                    block_node.add_child(Terminal(next_token));
+                    break;
+                }
+                _ => {
+                    block_node.add_child(self.declaration(next_token)?);
+                }
+            }
+        }
+        
+        Ok(NonTerminal(block_node))
     }
 
     fn expression_stmt(&mut self, token: Token) -> Result<Ast, LoxError> {

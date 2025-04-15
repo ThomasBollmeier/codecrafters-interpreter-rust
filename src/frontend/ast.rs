@@ -4,6 +4,7 @@ use std::collections::HashMap;
 pub enum AstType {
     Program,
     VarDecl,
+    Block,
     PrintStmt,
     ExprStmt,
     Group,

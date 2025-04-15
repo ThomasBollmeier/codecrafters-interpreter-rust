@@ -21,6 +21,12 @@ impl Interpreter {
         }
     }
 
+    fn new_child(&self) -> Interpreter {
+        Interpreter {
+            env: Env::new_ref(Some(self.env.clone()))
+        }
+    }
+
     pub fn run(&self, code: String) -> Result<(), LoxError> {
         let ast = parser::parse_program(&code)?;
         self.eval_ast(&ast).map(|_| {})
@@ -51,6 +57,7 @@ impl Interpreter {
             Ast::NonTerminal(ast_node) => match ast_node.get_type() {
                 AstType::Program => self.eval_program(ast_node),
                 AstType::VarDecl => self.eval_var_decl(ast_node),
+                AstType::Block => self.eval_block(ast_node),
                 AstType::PrintStmt => self.eval_print_stmt(ast_node),
                 AstType::ExprStmt => self.eval_expr_stmt(ast_node),
                 AstType::Group => {
@@ -86,6 +93,18 @@ impl Interpreter {
             Value::Nil
         };
         self.env.borrow_mut().set_value(var_name, init_value);
+
+        Ok(Value::Nil)
+    }
+
+    fn eval_block(&self, ast_node: &AstNode) -> InterpreterResult {
+        let children = ast_node.get_children();
+        let stmts = &children[1..children.len()-1]; // first + last child are braces
+
+        let child_interpreter = self.new_child();
+        for stmt in stmts {
+            child_interpreter.eval_ast(stmt)?;
+        }
 
         Ok(Value::Nil)
     }
