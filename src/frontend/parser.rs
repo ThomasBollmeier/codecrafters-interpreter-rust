@@ -98,7 +98,29 @@ impl Parser {
                 .ok_or(Self::error("expected token but got none"))?,
         };
 
-        self.equality(token)
+        self.assignment(token)
+    }
+
+    fn assignment(&mut self, token: Token) -> Result<Ast, LoxError> {
+        let is_valid_lhs = &token.token_type == &TokenType::Identifier;
+        if !is_valid_lhs {
+            return self.equality(token);
+        }
+        let equal_token = if let Some(next_token) = self.peek() {
+            if next_token.token_type == TokenType::Equal {
+                self.consume(&vec![TokenType::Equal])?
+            } else {
+                return self.equality(token);
+            }
+        } else {
+            return self.equality(token);
+        };
+        let mut assign_node = AstNode::new(AstType::Assignment, None);
+        assign_node.add_child(Terminal(token));
+        assign_node.add_child(Terminal(equal_token));
+        assign_node.add_child(self.expression(None)?);
+        
+        Ok(NonTerminal(assign_node))
     }
 
     fn equality(&mut self, token: Token) -> Result<Ast, LoxError> {

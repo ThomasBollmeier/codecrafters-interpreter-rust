@@ -59,7 +59,7 @@ impl Interpreter {
                 }
                 AstType::Unary => self.eval_unary(ast_node),
                 AstType::Binary => self.eval_binary(ast_node),
-                //_ => Self::error("not implemented")
+                AstType::Assignment => self.eval_assignment(ast_node),
             },
         }
     }
@@ -201,6 +201,18 @@ impl Interpreter {
                 }
             }
         }
+    }
+
+    fn eval_assignment(&self, assign_node: &AstNode) -> InterpreterResult {
+        let children = assign_node.get_children();
+        let lhs = &children[0];
+        let identifier = match lhs {
+            Ast::Terminal(token) => token.lexeme.clone(),
+            _ => return Self::error("invalid lhs of assignment"),
+        };
+        let rhs_value = self.eval_ast(&children[2])?;
+        self.env.borrow_mut().set_value(identifier, rhs_value.clone());
+        Ok(rhs_value)
     }
 
     fn eval_identifier(&self, identifier: &str) -> InterpreterResult {

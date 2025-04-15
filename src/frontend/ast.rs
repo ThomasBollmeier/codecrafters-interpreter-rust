@@ -9,6 +9,7 @@ pub enum AstType {
     Group,
     Unary,
     Binary,
+    Assignment,
 }
 
 pub enum AstValue {
