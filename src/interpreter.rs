@@ -230,8 +230,11 @@ impl Interpreter {
             _ => return Self::error("invalid lhs of assignment"),
         };
         let rhs_value = self.eval_ast(&children[2])?;
-        self.env.borrow_mut().set_value(identifier, rhs_value.clone());
-        Ok(rhs_value)
+        if self.env.borrow_mut().update_value(identifier.clone(), rhs_value.clone()) {
+            Ok(rhs_value)    
+        } else {
+            Self::error(&format!("variable {identifier} does not exist"))
+        }
     }
 
     fn eval_identifier(&self, identifier: &str) -> InterpreterResult {

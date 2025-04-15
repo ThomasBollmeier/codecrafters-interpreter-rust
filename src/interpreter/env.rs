@@ -1,6 +1,7 @@
 use crate::interpreter::values::Value;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
 pub struct Env {
@@ -22,6 +23,17 @@ impl Env {
         self.values.insert(name, value);
     }
 
+    pub fn update_value(&mut self, name: String, value: Value) -> bool {
+        if let Entry::Occupied(mut e) = self.values.entry(name.clone()) {
+            e.insert(value);
+            return true;
+        }
+        if let Some(parent) = &self.parent {
+            return parent.borrow_mut().update_value(name, value);
+        }
+        false
+    }
+
     pub fn get_value(&self, name: &str) -> Option<Value> {
         match self.values.get(name) {
             Some(value) => Some(value.clone()),
@@ -34,4 +46,5 @@ impl Env {
             }
         }
     }
+    
 }
