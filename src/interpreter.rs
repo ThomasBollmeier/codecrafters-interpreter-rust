@@ -60,6 +60,7 @@ impl Interpreter {
                 AstType::Block => self.eval_block(ast_node),
                 AstType::IfStmt => self.eval_if_stmt(ast_node),
                 AstType::WhileStmt => self.eval_while_stmt(ast_node),
+                AstType::ForStmt => self.eval_for_stmt(ast_node),
                 AstType::PrintStmt => self.eval_print_stmt(ast_node),
                 AstType::ExprStmt => self.eval_expr_stmt(ast_node),
                 AstType::Group => {
@@ -137,6 +138,54 @@ impl Interpreter {
             self.eval_ast(stmt)?;
         }
         
+        Ok(Value::Nil)
+    }
+
+    fn eval_for_stmt(&self, ast_node: &AstNode) -> InterpreterResult {
+        let mut initializer: Option<&Ast> = None;
+        let mut condition: Option<&Ast> = None;
+        let mut increment: Option<&Ast> = None;
+        let mut statement: Option<&Ast> = None;
+
+        let children = ast_node.get_children();
+        for child in children {
+            match child.get_label().as_str() {
+                "initializer" => {
+                    initializer = Some(child);
+                }
+                "condition" => {
+                    condition = Some(child);
+                }
+                "increment" => {
+                    increment = Some(child);
+                }
+                _ => {
+                    statement = Some(child);
+                }
+            }
+        }
+
+        let for_interpreter = self.new_child();
+
+        if let Some(init) = initializer {
+            for_interpreter.eval_ast(init)?;
+        }
+
+        loop {
+            if let Some(cond) = condition {
+                let cond_value = for_interpreter.eval_ast(cond)?;
+                if !Self::is_truthy(&cond_value) {
+                    break;
+                }
+            }
+            if let Some(stmt) = statement {
+                for_interpreter.eval_ast(stmt)?;
+            }
+            if let Some(incr) = increment {
+                for_interpreter.eval_ast(incr)?;
+            }
+        }
+
         Ok(Value::Nil)
     }
 
@@ -474,6 +523,15 @@ mod tests {
             } else {
                 print "bar";
             }
+        "#;
+        assert!(interpreter.run(code.to_string()).is_ok());
+    }
+
+    #[test]
+    fn eval_for_stmt() {
+        let interpreter = Interpreter::new();
+        let code = r#"
+            for (var baz = 0; baz < 3;) print baz = baz + 1;
         "#;
         assert!(interpreter.run(code.to_string()).is_ok());
     }

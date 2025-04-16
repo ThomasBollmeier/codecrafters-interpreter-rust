@@ -77,6 +77,7 @@ impl Parser {
         match token.token_type {
             TokenType::If => self.if_stmt(token),
             TokenType::While => self.while_stmt(),
+            TokenType::For => self.for_stmt(),
             TokenType::Print => self.print_stmt(token),
             TokenType::LeftBrace => self.block(token),
             _ => self.expression_stmt(token),
@@ -123,10 +124,70 @@ impl Parser {
         let token = self
             .advance()?
             .ok_or(Self::error("expected token, but got none"))?;
-        let stmt = self.statement(token)?;
-        while_node.add_child(stmt);
-        
+        while_node.add_child(self.statement(token)?);
+
         Ok(NonTerminal(while_node))
+    }
+
+    fn for_stmt(&mut self) -> Result<Ast, LoxError> {
+        let mut for_node = AstNode::new(AstType::ForStmt, None);
+        self.consume(&vec![TokenType::LeftParen])?;
+
+        let mut token = self
+            .advance()?
+            .ok_or(Self::error("expected token, but got none"))?;
+        
+        match &token.token_type {
+            TokenType::Var => {
+                let mut var_decl = self.var_decl(token)?;
+                var_decl.set_label("initializer");
+                for_node.add_child(var_decl);
+            }
+            TokenType::Semicolon => {}
+            _ => {
+                let mut expr_stmt = self.expression_stmt(token)?;
+                expr_stmt.set_label("initializer");
+                for_node.add_child(expr_stmt);
+            }
+        }
+
+        token = self
+            .advance()?
+            .ok_or(Self::error("expected token, but got none"))?;
+
+        match &token.token_type {
+            TokenType::Semicolon => {}
+            _ => {
+                let mut expr = self.expression(Some(token))?;
+                expr.set_label("condition");
+                for_node.add_child(expr);
+                self.consume(&vec![TokenType::Semicolon])?;
+            }
+        }
+
+        token = self
+            .advance()?
+            .ok_or(Self::error("expected token, but got none"))?;
+
+        match &token.token_type {
+            TokenType::RightParen => {}
+            _ => {
+                let mut expr = self.expression(Some(token))?;
+                expr.set_label("increment");
+                for_node.add_child(expr);
+                self.consume(&vec![TokenType::RightParen])?;
+            }
+        }
+
+        token = self
+            .advance()?
+            .ok_or(Self::error("expected token, but got none"))?;
+
+        let mut stmt = self.statement(token)?;
+        stmt.set_label("statement");
+        for_node.add_child(stmt);
+
+        Ok(NonTerminal(for_node))
     }
 
     fn print_stmt(&mut self, token: Token) -> Result<Ast, LoxError> {
@@ -183,7 +244,7 @@ impl Parser {
     }
 
     fn assignment(&mut self, token: Token) -> Result<Ast, LoxError> {
-        let is_valid_lhs = &token.token_type == &TokenType::Identifier;
+        let is_valid_lhs = token.token_type == TokenType::Identifier;
         if !is_valid_lhs {
             return self.disjunction(token);
         }
@@ -211,17 +272,11 @@ impl Parser {
         loop {
             let operand = self.conjunction(token)?;
             operands.push(operand);
-            if let Some(tok) = self.peek() {
-                if tok.token_type == TokenType::Or {
-                    self.advance()?;
-                    token = self
-                        .advance()?
-                        .ok_or(Self::error("expected token but got none"))?;
-                } else {
-                    break;
+            match self.get_next_operand(&TokenType::Or)? {
+                Some(tok) => {
+                    token = tok;
                 }
-            } else {
-                break;
+                None => break,
             }
         }
 
@@ -244,17 +299,11 @@ impl Parser {
         loop {
             let operand = self.equality(token)?;
             operands.push(operand);
-            if let Some(tok) = self.peek() {
-                if tok.token_type == TokenType::And {
-                    self.advance()?;
-                    token = self
-                        .advance()?
-                        .ok_or(Self::error("expected token but got none"))?;
-                } else {
-                    break;
+            match self.get_next_operand(&TokenType::And)? {
+                Some(tok) => {
+                    token = tok;
                 }
-            } else {
-                break;
+                None => break,
             }
         }
 
@@ -268,6 +317,21 @@ impl Parser {
         }
 
         Ok(NonTerminal(ret))
+    }
+
+    fn get_next_operand(&mut self, operator_type: &TokenType) -> Result<Option<Token>, LoxError> {
+        if let Some(tok) = self.peek() {
+            if &tok.token_type == operator_type {
+                self.advance()?;
+                self.advance()?
+                    .ok_or(Self::error("expected token but got none"))
+                    .map(Some)
+            } else {
+                Ok(None)
+            }
+        } else {
+            Ok(None)
+        }
     }
 
     fn equality(&mut self, token: Token) -> Result<Ast, LoxError> {
@@ -555,6 +619,17 @@ mod tests {
             var answer = 42;
             answer or 42;
             "#,
+        );
+
+        assert!(result.is_ok(), "ERROR: {}", result.err().unwrap());
+    }
+    
+    #[test]
+    fn for_stmt() {
+        let result = parse_program(
+            r#"
+            for (var foo = 0; foo < 3;) print foo = foo + 1;
+            "#
         );
 
         assert!(result.is_ok(), "ERROR: {}", result.err().unwrap());

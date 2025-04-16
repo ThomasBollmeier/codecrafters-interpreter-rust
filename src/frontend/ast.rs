@@ -7,6 +7,7 @@ pub enum AstType {
     Block,
     IfStmt,
     WhileStmt,
+    ForStmt,
     PrintStmt,
     ExprStmt,
     Group,
@@ -61,8 +62,16 @@ impl AstNode {
         self.attrs.insert(key, AstValue::Number(value));
     }
 
+    pub fn set_attr_bool(&mut self, key: String, value: bool) {
+        self.attrs.insert(key, AstValue::Boolean(value));
+    }
+
     pub fn get_attr(&self, key: &str) -> Option<&AstValue> {
         self.attrs.get(key)
+    }
+
+    pub fn has_attr(&self, key: &str) -> bool {
+        self.attrs.contains_key(key)
     }
 
     pub fn add_child(&mut self, child: Ast) {
@@ -86,6 +95,27 @@ impl Ast {
 
     pub fn accept_mut(&mut self, visitor: &mut impl AstVisitorMut) {
         visitor.visit(self);
+    }
+
+    pub fn set_label(&mut self, label: &str) {
+        if let Ast::NonTerminal(ast_node) = self {
+            ast_node.set_attr_str("label".to_string(), label);
+        }
+    }
+
+    pub fn get_label(&self) -> String {
+        match self {
+            Ast::NonTerminal(ast_node) => {
+                match ast_node.get_attr("label") {
+                    Some(value) => match value {
+                        AstValue::Str(s) => s.clone(),
+                        _ => String::new()
+                    }
+                    _ => String::new()
+                }
+            },
+            _ => String::new()
+        }
     }
 }
 
