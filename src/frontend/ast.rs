@@ -5,6 +5,7 @@ pub enum AstType {
     Program,
     VarDecl,
     Block,
+    IfStmt,
     PrintStmt,
     ExprStmt,
     Group,

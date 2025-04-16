@@ -23,7 +23,7 @@ impl Interpreter {
 
     fn new_child(&self) -> Interpreter {
         Interpreter {
-            env: Env::new_ref(Some(self.env.clone()))
+            env: Env::new_ref(Some(self.env.clone())),
         }
     }
 
@@ -58,6 +58,7 @@ impl Interpreter {
                 AstType::Program => self.eval_program(ast_node),
                 AstType::VarDecl => self.eval_var_decl(ast_node),
                 AstType::Block => self.eval_block(ast_node),
+                AstType::IfStmt => self.eval_if_stmt(ast_node),
                 AstType::PrintStmt => self.eval_print_stmt(ast_node),
                 AstType::ExprStmt => self.eval_expr_stmt(ast_node),
                 AstType::Group => {
@@ -99,11 +100,23 @@ impl Interpreter {
 
     fn eval_block(&self, ast_node: &AstNode) -> InterpreterResult {
         let children = ast_node.get_children();
-        let stmts = &children[1..children.len()-1]; // first + last child are braces
+        let stmts = &children[1..children.len() - 1]; // first + last child are braces
 
         let child_interpreter = self.new_child();
         for stmt in stmts {
             child_interpreter.eval_ast(stmt)?;
+        }
+
+        Ok(Value::Nil)
+    }
+
+    fn eval_if_stmt(&self, ast_node: &AstNode) -> InterpreterResult {
+        let children = ast_node.get_children(); // 'if' '(' cond ')' then_branch ('else' else_branch)?
+        let cond_value = self.eval_ast(&children[2])?;
+        if Self::is_truthy(&cond_value) {
+            self.eval_ast(&children[4])?;
+        } else if children.len() == 7 {
+            self.eval_ast(&children[6])?;
         }
 
         Ok(Value::Nil)
@@ -230,8 +243,12 @@ impl Interpreter {
             _ => return Self::error("invalid lhs of assignment"),
         };
         let rhs_value = self.eval_ast(&children[2])?;
-        if self.env.borrow_mut().update_value(identifier.clone(), rhs_value.clone()) {
-            Ok(rhs_value)    
+        if self
+            .env
+            .borrow_mut()
+            .update_value(identifier.clone(), rhs_value.clone())
+        {
+            Ok(rhs_value)
         } else {
             Self::error(&format!("variable {identifier} does not exist"))
         }
@@ -401,5 +418,19 @@ mod tests {
             .expect("error in evaluation");
 
         assert_eq!(&format!("{}", value), "foobar");
+    }
+
+    #[test]
+    fn eval_if_stmt() {
+        let interpreter = Interpreter::new();
+        let code = r#"
+            var answer = 42;
+            if (answer == 42) {
+                print "foo";
+            } else {
+                print "bar";
+            }
+        "#;
+        assert!(interpreter.run(code.to_string()).is_ok());
     }
 }
