@@ -28,6 +28,13 @@ impl Parser {
             program_node.add_child(stmt);
         }
 
+        if let Some(token) = self.peek() {
+            return Err(Self::error(&format!(
+                "input is not empty: '{}'",
+                token.lexeme
+            )));
+        }
+
         Ok(NonTerminal(program_node))
     }
 
@@ -162,16 +169,16 @@ impl Parser {
     fn assignment(&mut self, token: Token) -> Result<Ast, LoxError> {
         let is_valid_lhs = &token.token_type == &TokenType::Identifier;
         if !is_valid_lhs {
-            return self.equality(token);
+            return self.disjunction(token);
         }
         let equal_token = if let Some(next_token) = self.peek() {
             if next_token.token_type == TokenType::Equal {
                 self.consume(&vec![TokenType::Equal])?
             } else {
-                return self.equality(token);
+                return self.disjunction(token);
             }
         } else {
-            return self.equality(token);
+            return self.disjunction(token);
         };
         let mut assign_node = AstNode::new(AstType::Assignment, None);
         assign_node.add_child(Terminal(token));
@@ -179,6 +186,72 @@ impl Parser {
         assign_node.add_child(self.expression(None)?);
 
         Ok(NonTerminal(assign_node))
+    }
+
+    fn disjunction(&mut self, first_token: Token) -> Result<Ast, LoxError> {
+        let mut token = first_token;
+        let mut operands = Vec::new();
+
+        loop {
+            let operand = self.conjunction(token)?;
+            operands.push(operand);
+            if let Some(tok) = self.peek() {
+                if tok.token_type == TokenType::Or {
+                    self.advance()?;
+                    token = self
+                        .advance()?
+                        .ok_or(Self::error("expected token but got none"))?;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        if operands.len() == 1 {
+            return Ok(operands.pop().unwrap());
+        }
+
+        let mut ret = AstNode::new(AstType::Disjunction, None);
+        for operand in operands {
+            ret.add_child(operand);
+        }
+
+        Ok(NonTerminal(ret))
+    }
+
+    fn conjunction(&mut self, first_token: Token) -> Result<Ast, LoxError> {
+        let mut token = first_token;
+        let mut operands = Vec::new();
+
+        loop {
+            let operand = self.equality(token)?;
+            operands.push(operand);
+            if let Some(tok) = self.peek() {
+                if tok.token_type == TokenType::And {
+                    self.advance()?;
+                    token = self
+                        .advance()?
+                        .ok_or(Self::error("expected token but got none"))?;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        if operands.len() == 1 {
+            return Ok(operands.pop().unwrap());
+        }
+
+        let mut ret = AstNode::new(AstType::Conjunction, None);
+        for operand in operands {
+            ret.add_child(operand);
+        }
+
+        Ok(NonTerminal(ret))
     }
 
     fn equality(&mut self, token: Token) -> Result<Ast, LoxError> {
@@ -454,5 +527,17 @@ mod tests {
         );
 
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn disjunction() {
+        let result = parse_program(
+            r#"
+            var answer = 42;
+            answer or 42;
+            "#,
+        );
+
+        assert!(result.is_ok(), "ERROR: {}", result.err().unwrap());
     }
 }

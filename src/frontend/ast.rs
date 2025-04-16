@@ -12,6 +12,8 @@ pub enum AstType {
     Unary,
     Binary,
     Assignment,
+    Disjunction,
+    Conjunction,
 }
 
 pub enum AstValue {

@@ -68,6 +68,8 @@ impl Interpreter {
                 AstType::Unary => self.eval_unary(ast_node),
                 AstType::Binary => self.eval_binary(ast_node),
                 AstType::Assignment => self.eval_assignment(ast_node),
+                AstType::Disjunction => self.eval_disjunction(ast_node),
+                AstType::Conjunction => self.eval_conjunction(ast_node),
             },
         }
     }
@@ -252,6 +254,32 @@ impl Interpreter {
         } else {
             Self::error(&format!("variable {identifier} does not exist"))
         }
+    }
+
+    fn eval_disjunction(&self, ast_node: &AstNode) -> InterpreterResult {
+        let mut ret = Value::Boolean(true);
+        let operands = ast_node.get_children();
+        for operand in operands {
+            ret = self.eval_ast(operand)?;
+            if Self::is_truthy(&ret) {
+                return Ok(ret);
+            }
+        }
+
+        Ok(ret)
+    }
+
+    fn eval_conjunction(&self, ast_node: &AstNode) -> InterpreterResult {
+        let mut ret = Value::Boolean(false);
+        let operands = ast_node.get_children();
+        for operand in operands {
+            ret = self.eval_ast(operand)?;
+            if !Self::is_truthy(&ret) {
+                return Ok(ret);
+            }
+        }
+
+        Ok(ret)
     }
 
     fn eval_identifier(&self, identifier: &str) -> InterpreterResult {
