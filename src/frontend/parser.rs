@@ -76,6 +76,7 @@ impl Parser {
     fn statement(&mut self, token: Token) -> Result<Ast, LoxError> {
         match token.token_type {
             TokenType::If => self.if_stmt(token),
+            TokenType::While => self.while_stmt(),
             TokenType::Print => self.print_stmt(token),
             TokenType::LeftBrace => self.block(token),
             _ => self.expression_stmt(token),
@@ -111,6 +112,21 @@ impl Parser {
         }
 
         Ok(NonTerminal(if_node))
+    }
+
+    fn while_stmt(&mut self) -> Result<Ast, LoxError> {
+        let mut while_node = AstNode::new(AstType::WhileStmt, None);
+        self.consume(&vec![TokenType::LeftParen])?;
+        let condition = self.expression(None)?;
+        while_node.add_child(condition);
+        self.consume(&vec![TokenType::RightParen])?;
+        let token = self
+            .advance()?
+            .ok_or(Self::error("expected token, but got none"))?;
+        let stmt = self.statement(token)?;
+        while_node.add_child(stmt);
+        
+        Ok(NonTerminal(while_node))
     }
 
     fn print_stmt(&mut self, token: Token) -> Result<Ast, LoxError> {
@@ -462,7 +478,10 @@ impl Parser {
             let token = self.token_stream.advance()?.unwrap();
             Ok(token)
         } else {
-            Err(Self::error("token has unexpected type"))
+            Err(Self::error(&format!(
+                "token '{}' has unexpected type",
+                next_token.lexeme
+            )))
         }
     }
 

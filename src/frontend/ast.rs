@@ -6,6 +6,7 @@ pub enum AstType {
     VarDecl,
     Block,
     IfStmt,
+    WhileStmt,
     PrintStmt,
     ExprStmt,
     Group,

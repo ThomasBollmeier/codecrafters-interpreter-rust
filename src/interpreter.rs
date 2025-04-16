@@ -59,6 +59,7 @@ impl Interpreter {
                 AstType::VarDecl => self.eval_var_decl(ast_node),
                 AstType::Block => self.eval_block(ast_node),
                 AstType::IfStmt => self.eval_if_stmt(ast_node),
+                AstType::WhileStmt => self.eval_while_stmt(ast_node),
                 AstType::PrintStmt => self.eval_print_stmt(ast_node),
                 AstType::ExprStmt => self.eval_expr_stmt(ast_node),
                 AstType::Group => {
@@ -121,6 +122,21 @@ impl Interpreter {
             self.eval_ast(&children[6])?;
         }
 
+        Ok(Value::Nil)
+    }
+
+    fn eval_while_stmt(&self, ast_node: &AstNode) -> InterpreterResult {
+        let children = ast_node.get_children();
+        let condition = &children[0];
+        let stmt = &children[1];
+        loop {
+            let cond_value = self.eval_ast(condition)?;
+            if !Self::is_truthy(&cond_value) {
+                break;
+            }
+            self.eval_ast(stmt)?;
+        }
+        
         Ok(Value::Nil)
     }
 
