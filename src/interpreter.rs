@@ -1,13 +1,11 @@
 use std::rc::Rc;
-
 use values::NativeFunction;
-
 use crate::common::LoxError;
 use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
 use crate::frontend::parser;
 use crate::frontend::tokens::{Literal, TokenType};
 use crate::interpreter::env::{Env, EnvRef};
-use crate::interpreter::values::Value;
+use crate::interpreter::values::{Callable, UserFunction, Value};
 
 mod env;
 mod native;
@@ -38,7 +36,7 @@ impl Interpreter {
     ) {
         let native_fn = NativeFunction::new(callable);
         env.borrow_mut()
-            .set_value(name.to_string(), Value::Native(native_fn));
+            .set_value(name.to_string(), Value::NativeFunc(native_fn));
     }
 
     fn new_child(&self) -> Interpreter {
@@ -55,6 +53,10 @@ impl Interpreter {
     pub fn eval(&self, code: String) -> InterpreterResult {
         let ast = parser::parse_expression(&code)?;
         self.eval_ast(&ast)
+    }
+
+    pub fn get_env(&self) -> EnvRef {
+        self.env.clone()
     }
 
     fn eval_ast(&self, ast: &Ast) -> InterpreterResult {
@@ -77,6 +79,7 @@ impl Interpreter {
             Ast::NonTerminal(ast_node) => match ast_node.get_type() {
                 AstType::Program => self.eval_program(ast_node),
                 AstType::VarDecl => self.eval_var_decl(ast_node),
+                AstType::FunDecl => self.eval_fun_decl(ast_node),
                 AstType::Block => self.eval_block(ast_node),
                 AstType::IfStmt => self.eval_if_stmt(ast_node),
                 AstType::WhileStmt => self.eval_while_stmt(ast_node),
@@ -119,6 +122,42 @@ impl Interpreter {
             Value::Nil
         };
         self.env.borrow_mut().set_value(var_name, init_value);
+
+        Ok(Value::Nil)
+    }
+
+    fn eval_fun_decl(&self, ast_node: &AstNode) -> InterpreterResult {
+        let name = match ast_node.get_value() {
+            Some(AstValue::Str(name)) => name.clone(),
+            _ => return Self::error("invalid ast value"),
+        };
+        let children= ast_node.get_children();
+        let mut params = Vec::new();
+        let mut body = None;
+        for child in children {
+            match child {
+                Ast::Terminal(token) => {
+                    if token.token_type == TokenType::Identifier {
+                        params.push(token.lexeme.clone());
+                    }
+                }
+                Ast::NonTerminal(ast_node) if ast_node.get_type() == &AstType::Block => {
+                    body = Some(child);
+                }
+                _ => return Self::error("invalid ast value"),
+            }
+        }
+
+        let body = body.unwrap().clone();
+
+        let function = UserFunction::new(
+            Rc::new(self.new_child()),
+            name.clone(),
+            params,
+            Rc::new(body),
+        );
+
+        self.env.borrow_mut().set_value(name, Value::UserFunc(function));
 
         Ok(Value::Nil)
     }
@@ -377,7 +416,8 @@ impl Interpreter {
             .collect::<Result<Vec<Value>, LoxError>>()?;
 
         match callee {
-            Value::Native(native_fn) => native_fn.call(args),
+            Value::NativeFunc(native_fn) => native_fn.call(args),
+            Value::UserFunc(user_fn) => user_fn.call(args),
             _ => Self::error("invalid callee"),
         }
     }

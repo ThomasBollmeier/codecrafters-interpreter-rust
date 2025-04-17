@@ -1,9 +1,11 @@
 use crate::frontend::tokens::Token;
 use std::collections::HashMap;
 
+#[derive(PartialEq, Clone)]
 pub enum AstType {
     Program,
     VarDecl,
+    FunDecl,
     Block,
     IfStmt,
     WhileStmt,
@@ -19,6 +21,7 @@ pub enum AstType {
     Call,
 }
 
+#[derive(Clone)]
 pub enum AstValue {
     Str(String),
     Int(i32),
@@ -26,6 +29,7 @@ pub enum AstValue {
     Boolean(bool),
 }
 
+#[derive(Clone)]
 pub struct AstNode {
     ast_type: AstType,
     value: Option<AstValue>,
@@ -84,6 +88,9 @@ impl AstNode {
     }
 }
 
+
+
+#[derive(Clone)]
 pub enum Ast {
     NonTerminal(AstNode),
     Terminal(Token),

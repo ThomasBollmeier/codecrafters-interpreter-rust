@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use TokenType::*;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TokenType {
     LeftParen,
     RightParen,
@@ -132,14 +132,14 @@ impl Display for TokenType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Literal {
     Null,
     Str(String),
     Number(f64),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub token_type: TokenType,
     pub line: usize,

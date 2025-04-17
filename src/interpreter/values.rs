@@ -1,4 +1,5 @@
-use crate::interpreter::InterpreterResult;
+use crate::frontend::ast::Ast;
+use crate::interpreter::{Interpreter, InterpreterResult};
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
 
@@ -8,7 +9,8 @@ pub enum Value {
     Boolean(bool),
     Number(f64),
     Str(String),
-    Native(NativeFunction),
+    NativeFunc(NativeFunction),
+    UserFunc(UserFunction),
 }
 
 impl Display for Value {
@@ -18,7 +20,8 @@ impl Display for Value {
             Value::Boolean(bool) => write!(f, "{}", bool),
             Value::Number(num) => write!(f, "{}", num),
             Value::Str(s) => write!(f, "{}", s),
-            Value::Native(_) => write!(f, "<native fn>"),
+            Value::NativeFunc(_) => write!(f, "<native fn>"),
+            Value::UserFunc(func) => write!(f, "<fn {}>", func.get_name()),
         }
     }
 }
@@ -39,5 +42,53 @@ impl NativeFunction {
 
     pub fn call(&self, args: Vec<Value>) -> InterpreterResult {
         (self.callable)(args)
+    }
+}
+
+#[derive(Clone)]
+pub struct UserFunction {
+    interpreter: Rc<Interpreter>,
+    name: String,
+    params: Vec<String>,
+    body: Rc<Ast>,
+}
+
+impl UserFunction {
+    pub fn new(
+        interpreter: Rc<Interpreter>,
+        name: String,
+        params: Vec<String>,
+        body: Rc<Ast>,
+    ) -> UserFunction {
+        UserFunction {
+            interpreter,
+            name,
+            params,
+            body,
+        }
+    }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
+}
+
+impl Callable for UserFunction {
+    fn call(&self, args: Vec<Value>) -> InterpreterResult {
+        if args.len() != self.params.len() {
+            return Interpreter::error(&format!(
+                "expected {} arguments, but got {}",
+                self.params.len(),
+                args.len()
+            ));
+        }
+
+        let interpreter = self.interpreter.new_child();
+        let env = interpreter.get_env();
+        for (param, arg) in self.params.iter().zip(args) {
+            env.borrow_mut().set_value(param.clone(), arg);
+        }
+
+        self.interpreter.eval_ast(&self.body.clone())
     }
 }

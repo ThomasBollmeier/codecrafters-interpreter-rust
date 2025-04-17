@@ -41,8 +41,49 @@ impl Parser {
     fn declaration(&mut self, token: Token) -> Result<Ast, LoxError> {
         match token.token_type {
             TokenType::Var => self.var_decl(token),
+            TokenType::Fun => self.fun_decl(),
             _ => self.statement(token),
         }
+    }
+
+    fn fun_decl(&mut self) -> Result<Ast, LoxError> {
+        let tok_name = self.consume(&vec![TokenType::Identifier])?;
+        let mut fun_node = AstNode::new(
+            AstType::FunDecl,
+            Some(AstValue::Str(tok_name.lexeme.clone())),
+        );
+        self.consume(&vec![TokenType::LeftParen])?;
+
+        // parse parameters
+        loop {
+            let next_token = self
+                .advance()?
+                .ok_or(Self::error("expected token, but got none"))?;
+            match next_token.token_type {
+                TokenType::RightParen => break,
+                TokenType::Identifier => {
+                    fun_node.add_child(Terminal(next_token));
+                    match self.peek() {
+                        Some(token) => if token.token_type == TokenType::Comma {
+                            self.advance()?;
+                        },
+                        None => return Err(Self::error("expected token, but got none")),
+                    }
+                }
+                _ => return Err(Self::error("unexpected token type")),
+            }
+        }
+
+        let next_token = self
+            .advance()?
+            .ok_or(Self::error("expected token, but got none"))?;
+        if next_token.token_type != TokenType::LeftBrace {
+            return Err(Self::error("expected '{' after parameters"));
+        }
+
+        fun_node.add_child(self.block(next_token)?);
+
+        Ok(NonTerminal(fun_node))
     }
 
     fn var_decl(&mut self, var_token: Token) -> Result<Ast, LoxError> {
@@ -667,6 +708,19 @@ mod tests {
         let result = parse_program(
             r#"
             for (var foo = 0; foo < 3;) print foo = foo + 1;
+            "#,
+        );
+
+        assert!(result.is_ok(), "ERROR: {}", result.err().unwrap());
+    }
+
+    #[test]
+    fn fun_decl() {
+        let result = parse_program(
+            r#"
+            fun foo(a, b) {
+                print a + b;
+            }
             "#,
         );
 
