@@ -12,7 +12,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/interpreter/values.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter/values.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/frontend/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/parser.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,6 +54,9 @@
     "Cargo.Run codecrafters-interpreter.executor": "Run",
     "Cargo.Test frontend::parser::tests::binary.executor": "Run",
     "Cargo.Test frontend::parser::tests::for_stmt.executor": "Debug",
+    "Cargo.Test frontend::parser::tests::fun_call.executor": "Debug",
+    "Cargo.Test frontend::parser::tests::fun_call_error.executor": "Run",
+    "Cargo.Test frontend::parser::tests::fun_calll.executor": "Debug",
     "Cargo.Test frontend::parser::tests::fun_decl.executor": "Debug",
     "Cargo.Test frontend::parser::tests::group.executor": "Run",
     "Cargo.Test frontend::parser::tests::print_statement.executor": "Run",
@@ -103,7 +107,7 @@
     <option name="runOnTheFly" value="true" />
     <option name="tool" value="Clippy" />
   </component>
-  <component name="RunManager" selected="Cargo.Test frontend::parser::tests::fun_decl">
+  <component name="RunManager" selected="Cargo.Test frontend::parser::tests::fun_call_error">
     <configuration name="All Tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
       <option name="command" value="test" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -156,8 +160,42 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test frontend::parser::tests::for_stmt" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::for_stmt -- --exact" />
+    <configuration name="Test frontend::parser::tests::fun_call" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::fun_call -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test frontend::parser::tests::fun_call_error" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::fun_call_error -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test frontend::parser::tests::fun_calll" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::fun_calll -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -190,56 +228,22 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test frontend::parser::tests::print_statement" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::print_statement -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <envs />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test interpreter::tests::eval_for_stmt" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib interpreter::tests::eval_for_stmt -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <envs />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
     <list>
       <item itemvalue="Cargo.Run codecrafters-interpreter" />
       <item itemvalue="Cargo.Test codecrafters-interpreter" />
+      <item itemvalue="Cargo.Test frontend::parser::tests::fun_call" />
+      <item itemvalue="Cargo.Test frontend::parser::tests::fun_call_error" />
+      <item itemvalue="Cargo.Test frontend::parser::tests::fun_calll" />
       <item itemvalue="Cargo.Test frontend::parser::tests::fun_decl" />
       <item itemvalue="Cargo.All Tests" />
-      <item itemvalue="Cargo.Test frontend::parser::tests::for_stmt" />
-      <item itemvalue="Cargo.Test frontend::parser::tests::print_statement" />
-      <item itemvalue="Cargo.Test interpreter::tests::eval_for_stmt" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Cargo.Test frontend::parser::tests::fun_call_error" />
+        <item itemvalue="Cargo.Test frontend::parser::tests::fun_call" />
+        <item itemvalue="Cargo.Test frontend::parser::tests::fun_calll" />
         <item itemvalue="Cargo.Test frontend::parser::tests::fun_decl" />
         <item itemvalue="Cargo.All Tests" />
-        <item itemvalue="Cargo.Test interpreter::tests::eval_for_stmt" />
-        <item itemvalue="Cargo.Test frontend::parser::tests::for_stmt" />
-        <item itemvalue="Cargo.Test frontend::parser::tests::print_statement" />
       </list>
     </recent_temporary>
   </component>
@@ -289,7 +293,8 @@
       <workItem from="1744908184981" duration="695000" />
       <workItem from="1744909087269" duration="254000" />
       <workItem from="1744909401623" duration="100000" />
-      <workItem from="1744909563150" duration="7514000" />
+      <workItem from="1744909563150" duration="7673000" />
+      <workItem from="1744924472368" duration="1201000" />
     </task>
     <servers />
   </component>

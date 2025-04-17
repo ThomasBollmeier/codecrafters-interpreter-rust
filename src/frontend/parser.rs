@@ -64,10 +64,14 @@ impl Parser {
                 TokenType::Identifier => {
                     fun_node.add_child(Terminal(next_token));
                     match self.peek() {
-                        Some(token) => if token.token_type == TokenType::Comma {
-                            self.advance()?;
-                        },
-                        None => return Err(Self::error("expected token, but got none")),
+                        Some(token) => match token.token_type {
+                            TokenType::Comma => {
+                                self.advance()?;
+                            }
+                            TokenType::RightParen => {}
+                            _ => return Err(Self::error("unexpected token type")),
+                        }
+                        _ => return Err(Self::error("expected token, but got none")),
                     }
                 }
                 _ => return Err(Self::error("unexpected token type")),
@@ -725,5 +729,33 @@ mod tests {
         );
 
         assert!(result.is_ok(), "ERROR: {}", result.err().unwrap());
+    }
+
+    #[test]
+    fn fun_call() {
+        let result = parse_program(
+            r#"
+            fun foo(a, b) {
+                print a + b;
+            }
+            print foo(1, 2);
+            "#,
+        );
+
+        assert!(result.is_ok(), "ERROR: {}", result.err().unwrap());
+    }
+
+    #[test]
+    fn fun_call_error() {
+        let result = parse_program(
+            r#"
+            fun foo(a, b c) {
+                print a + b + c;
+            }
+            print foo(1, 2, 3);
+            "#,
+        );
+
+        assert!(result.is_err());
     }
 }
