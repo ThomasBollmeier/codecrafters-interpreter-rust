@@ -12,11 +12,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/frontend/ast.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/ast.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/frontend/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/parser.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/frontend/tokens.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/tokens.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/interpreter.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/interpreter/values.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter/values.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -39,7 +34,7 @@
     <option name="directoryName" value="1krKfyeU" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -294,7 +289,7 @@
       <workItem from="1744908184981" duration="695000" />
       <workItem from="1744909087269" duration="254000" />
       <workItem from="1744909401623" duration="100000" />
-      <workItem from="1744909563150" duration="7207000" />
+      <workItem from="1744909563150" duration="7514000" />
     </task>
     <servers />
   </component>

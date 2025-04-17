@@ -89,6 +89,6 @@ impl Callable for UserFunction {
             env.borrow_mut().set_value(param.clone(), arg);
         }
 
-        self.interpreter.eval_ast(&self.body.clone())
+        interpreter.eval_ast(&self.body.clone())
     }
 }
