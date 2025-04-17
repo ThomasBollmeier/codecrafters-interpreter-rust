@@ -16,6 +16,7 @@ pub enum AstType {
     Assignment,
     Disjunction,
     Conjunction,
+    Call,
 }
 
 pub enum AstValue {
@@ -105,16 +106,14 @@ impl Ast {
 
     pub fn get_label(&self) -> String {
         match self {
-            Ast::NonTerminal(ast_node) => {
-                match ast_node.get_attr("label") {
-                    Some(value) => match value {
-                        AstValue::Str(s) => s.clone(),
-                        _ => String::new()
-                    }
-                    _ => String::new()
-                }
+            Ast::NonTerminal(ast_node) => match ast_node.get_attr("label") {
+                Some(value) => match value {
+                    AstValue::Str(s) => s.clone(),
+                    _ => String::new(),
+                },
+                _ => String::new(),
             },
-            _ => String::new()
+            _ => String::new(),
         }
     }
 }

@@ -1,3 +1,7 @@
+use std::rc::Rc;
+
+use values::NativeFunction;
+
 use crate::common::LoxError;
 use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
 use crate::frontend::parser;
@@ -6,6 +10,7 @@ use crate::interpreter::env::{Env, EnvRef};
 use crate::interpreter::values::Value;
 
 mod env;
+mod native;
 pub mod values;
 
 pub type InterpreterResult = Result<Value, LoxError>;
@@ -16,9 +21,25 @@ pub struct Interpreter {
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter {
-            env: Env::new_ref(None),
-        }
+        let env = Env::new_ref(None);
+        Self::add_native_functions(env.clone());
+
+        Interpreter { env }
+    }
+
+    fn add_native_functions(env: EnvRef) {
+        Self::add_native_function(env.clone(), "echo", Rc::new(native::echo));
+        Self::add_native_function(env.clone(), "hello", Rc::new(native::hello));
+    }
+
+    fn add_native_function(
+        env: EnvRef,
+        name: &str,
+        callable: Rc<dyn Fn(Vec<Value>) -> InterpreterResult>,
+    ) {
+        let native_fn = NativeFunction::new(callable);
+        env.borrow_mut()
+            .set_value(name.to_string(), Value::Native(native_fn));
     }
 
     fn new_child(&self) -> Interpreter {
@@ -72,6 +93,7 @@ impl Interpreter {
                 AstType::Assignment => self.eval_assignment(ast_node),
                 AstType::Disjunction => self.eval_disjunction(ast_node),
                 AstType::Conjunction => self.eval_conjunction(ast_node),
+                AstType::Call => self.eval_call(ast_node),
             },
         }
     }
@@ -137,7 +159,7 @@ impl Interpreter {
             }
             self.eval_ast(stmt)?;
         }
-        
+
         Ok(Value::Nil)
     }
 
@@ -345,6 +367,20 @@ impl Interpreter {
         }
 
         Ok(ret)
+    }
+
+    fn eval_call(&self, ast_node: &AstNode) -> InterpreterResult {
+        let children = ast_node.get_children();
+        let callee = self.eval_ast(&children[0])?;
+        let args = children[1..]
+            .iter()
+            .map(|arg| self.eval_ast(arg))
+            .collect::<Result<Vec<Value>, LoxError>>()?;
+
+        match callee {
+            Value::Native(native_fn) => native_fn.call(args),
+            _ => Self::error("invalid callee"),
+        }
     }
 
     fn eval_identifier(&self, identifier: &str) -> InterpreterResult {

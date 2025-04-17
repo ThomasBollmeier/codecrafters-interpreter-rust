@@ -136,7 +136,7 @@ impl Parser {
         let mut token = self
             .advance()?
             .ok_or(Self::error("expected token, but got none"))?;
-        
+
         match &token.token_type {
             TokenType::Var => {
                 let mut var_decl = self.var_decl(token)?;
@@ -483,7 +483,7 @@ impl Parser {
     }
 
     fn atom(&mut self, token: Token) -> Result<Ast, LoxError> {
-        match token.token_type {
+        let expr = match token.token_type {
             TokenType::True
             | TokenType::False
             | TokenType::Nil
@@ -493,7 +493,45 @@ impl Parser {
             TokenType::LeftParen => self.group(token),
             TokenType::Bang | TokenType::Minus => self.unary(token),
             _ => Err(Self::error("unexpected token")),
+        }?;
+
+        if let Some(token) = self.peek() {
+            if token.token_type == TokenType::LeftParen {
+                return self.call(expr);
+            }
         }
+
+        Ok(expr)
+    }
+
+    fn call(&mut self, callee: Ast) -> Result<Ast, LoxError> {
+        self.consume(&vec![TokenType::LeftParen])?;
+
+        let mut call_node = AstNode::new(AstType::Call, None);
+        call_node.add_child(callee);
+
+        // Parse arguments
+        loop {
+            let token = self
+                .advance()?
+                .ok_or(Self::error("expected token but got none"))?;
+            match token.token_type {
+                TokenType::RightParen => break,
+                _ => {}
+            }
+            call_node.add_child(self.expression(Some(token))?);
+            match self.peek() {
+                Some(token) => match token.token_type {
+                    TokenType::Comma => {
+                        self.advance()?;
+                    }
+                    _ => {}
+                },
+                None => return Err(Self::error("expected token but got none")),
+            }
+        }
+
+        Ok(NonTerminal(call_node))
     }
 
     fn group(&mut self, open_paren: Token) -> Result<Ast, LoxError> {
@@ -623,13 +661,13 @@ mod tests {
 
         assert!(result.is_ok(), "ERROR: {}", result.err().unwrap());
     }
-    
+
     #[test]
     fn for_stmt() {
         let result = parse_program(
             r#"
             for (var foo = 0; foo < 3;) print foo = foo + 1;
-            "#
+            "#,
         );
 
         assert!(result.is_ok(), "ERROR: {}", result.err().unwrap());
