@@ -28,8 +28,7 @@ impl Interpreter {
     }
 
     fn add_native_functions(env: EnvRef) {
-        Self::add_native_function(env.clone(), "echo", Rc::new(native::echo));
-        Self::add_native_function(env.clone(), "hello", Rc::new(native::hello));
+        Self::add_native_function(env.clone(), "clock", Rc::new(native::clock));
     }
 
     fn add_native_function(
