@@ -11,6 +11,7 @@ pub enum Value {
     Str(String),
     NativeFunc(NativeFunction),
     UserFunc(UserFunction),
+    Return(Box<Value>),
 }
 
 impl Display for Value {
@@ -22,6 +23,7 @@ impl Display for Value {
             Value::Str(s) => write!(f, "{}", s),
             Value::NativeFunc(_) => write!(f, "<native fn>"),
             Value::UserFunc(func) => write!(f, "<fn {}>", func.get_name()),
+            Value::Return(value) => write!(f, "return value: {}", value),
         }
     }
 }
@@ -89,6 +91,11 @@ impl Callable for UserFunction {
             env.borrow_mut().set_value(param.clone(), arg);
         }
 
-        interpreter.eval_ast(&self.body.clone())
+        let result = interpreter.eval_ast(&self.body.clone())?;
+        if let Value::Return(value) = result {
+            Ok(*value)
+        } else {
+            Ok(result)
+        }
     }
 }

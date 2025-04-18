@@ -11,6 +11,7 @@ pub enum AstType {
     WhileStmt,
     ForStmt,
     PrintStmt,
+    ReturnStmt,
     ExprStmt,
     Group,
     Unary,

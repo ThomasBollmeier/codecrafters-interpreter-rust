@@ -85,6 +85,7 @@ impl Interpreter {
                 AstType::WhileStmt => self.eval_while_stmt(ast_node),
                 AstType::ForStmt => self.eval_for_stmt(ast_node),
                 AstType::PrintStmt => self.eval_print_stmt(ast_node),
+                AstType::ReturnStmt => self.eval_return_stmt(ast_node),
                 AstType::ExprStmt => self.eval_expr_stmt(ast_node),
                 AstType::Group => {
                     let expr = &ast_node.get_children()[1];
@@ -168,7 +169,10 @@ impl Interpreter {
 
         let child_interpreter = self.new_child();
         for stmt in stmts {
-            child_interpreter.eval_ast(stmt)?;
+            let value = child_interpreter.eval_ast(stmt)?;
+            if let Value::Return(_) = &value {
+                return Ok(value);
+            }
         }
 
         Ok(Value::Nil)
@@ -177,10 +181,16 @@ impl Interpreter {
     fn eval_if_stmt(&self, ast_node: &AstNode) -> InterpreterResult {
         let children = ast_node.get_children(); // 'if' '(' cond ')' then_branch ('else' else_branch)?
         let cond_value = self.eval_ast(&children[2])?;
-        if Self::is_truthy(&cond_value) {
-            self.eval_ast(&children[4])?;
+        let value = if Self::is_truthy(&cond_value) {
+            self.eval_ast(&children[4])?
         } else if children.len() == 7 {
-            self.eval_ast(&children[6])?;
+            self.eval_ast(&children[6])?
+        } else {
+            Value::Nil
+        };
+
+        if let Value::Return(_) = &value {
+            return Ok(value);
         }
 
         Ok(Value::Nil)
@@ -195,7 +205,10 @@ impl Interpreter {
             if !Self::is_truthy(&cond_value) {
                 break;
             }
-            self.eval_ast(stmt)?;
+            let value = self.eval_ast(stmt)?;
+            if let Value::Return(_) = &value {
+                return Ok(value);
+            }
         }
 
         Ok(Value::Nil)
@@ -239,7 +252,10 @@ impl Interpreter {
                 }
             }
             if let Some(stmt) = statement {
-                for_interpreter.eval_ast(stmt)?;
+                let value = for_interpreter.eval_ast(stmt)?;
+                if let Value::Return(_) = &value {
+                    return Ok(value);
+                }
             }
             if let Some(incr) = increment {
                 for_interpreter.eval_ast(incr)?;
@@ -253,6 +269,17 @@ impl Interpreter {
         let value = self.eval_ast(&ast_node.get_children()[1])?;
         println!("{value}");
         Ok(Value::Nil)
+    }
+
+    fn eval_return_stmt(&self, ast_node: &AstNode) -> InterpreterResult {
+        let children = ast_node.get_children();
+        let value = if children.len() == 1 {
+            self.eval_ast(&children[0])?
+        } else {
+            Value::Nil
+        };
+
+        Ok(Value::Return(Box::new(value)))
     }
 
     fn eval_expr_stmt(&self, ast_node: &AstNode) -> InterpreterResult {
@@ -610,4 +637,18 @@ mod tests {
         "#;
         assert!(interpreter.run(code.to_string()).is_ok());
     }
+
+    #[test]
+    fn eval_return_stmt() {
+        let interpreter = Interpreter::new();
+        let code = r#"
+            fun add(a, b) {
+                return a + b;
+            }
+            print add(20, 22);
+        "#;
+        let result = interpreter.run(code.to_string());
+        assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
+    }
+
 }

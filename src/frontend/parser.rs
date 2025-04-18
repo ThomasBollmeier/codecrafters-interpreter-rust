@@ -124,6 +124,7 @@ impl Parser {
             TokenType::While => self.while_stmt(),
             TokenType::For => self.for_stmt(),
             TokenType::Print => self.print_stmt(token),
+            TokenType::Return => self.return_stmt(),
             TokenType::LeftBrace => self.block(token),
             _ => self.expression_stmt(token),
         }
@@ -243,6 +244,19 @@ impl Parser {
         print_node.add_child(Terminal(semicolon));
 
         Ok(NonTerminal(print_node))
+    }
+
+    fn return_stmt(&mut self) -> Result<Ast, LoxError> {
+        let mut ret_node = AstNode::new(AstType::ReturnStmt, None);
+        let next_token = self
+            .advance()?
+            .ok_or(Self::error("expected token, but got none"))?;
+        if next_token.token_type != TokenType::Semicolon {
+            ret_node.add_child(self.expression(Some(next_token))?);
+            self.consume(&vec![TokenType::Semicolon])?;
+        }
+        
+        Ok(NonTerminal(ret_node))
     }
 
     fn block(&mut self, left_brace: Token) -> Result<Ast, LoxError> {
@@ -560,17 +574,11 @@ impl Parser {
             let token = self
                 .advance()?
                 .ok_or(Self::error("expected token but got none"))?;
-            match token.token_type {
-                TokenType::RightParen => break,
-                _ => {}
-            }
+            if token.token_type == TokenType::RightParen { break }
             call_node.add_child(self.expression(Some(token))?);
             match self.peek() {
-                Some(token) => match token.token_type {
-                    TokenType::Comma => {
-                        self.advance()?;
-                    }
-                    _ => {}
+                Some(token) => if token.token_type == TokenType::Comma {
+                    self.advance()?;
                 },
                 None => return Err(Self::error("expected token but got none")),
             }
