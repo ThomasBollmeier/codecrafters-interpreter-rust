@@ -70,7 +70,7 @@ impl Parser {
                             }
                             TokenType::RightParen => {}
                             _ => return Err(Self::error("unexpected token type")),
-                        }
+                        },
                         _ => return Err(Self::error("expected token, but got none")),
                     }
                 }
@@ -255,7 +255,7 @@ impl Parser {
             ret_node.add_child(self.expression(Some(next_token))?);
             self.consume(&vec![TokenType::Semicolon])?;
         }
-        
+
         Ok(NonTerminal(ret_node))
     }
 
@@ -574,17 +574,26 @@ impl Parser {
             let token = self
                 .advance()?
                 .ok_or(Self::error("expected token but got none"))?;
-            if token.token_type == TokenType::RightParen { break }
+            if token.token_type == TokenType::RightParen {
+                break;
+            }
             call_node.add_child(self.expression(Some(token))?);
             match self.peek() {
-                Some(token) => if token.token_type == TokenType::Comma {
-                    self.advance()?;
-                },
+                Some(token) => {
+                    if token.token_type == TokenType::Comma {
+                        self.advance()?;
+                    }
+                }
                 None => return Err(Self::error("expected token but got none")),
             }
         }
 
-        Ok(NonTerminal(call_node))
+        match self.peek() {
+            Some(token) if token.token_type == TokenType::LeftParen => {
+                self.call(NonTerminal(call_node))
+            }
+            _ => Ok(NonTerminal(call_node)),
+        }
     }
 
     fn group(&mut self, open_paren: Token) -> Result<Ast, LoxError> {
