@@ -33,6 +33,27 @@ impl Env {
         }
         false
     }
+    
+    pub fn update_value_at_level(env: EnvRef, name: String, value: Value, scope_level: i32) -> bool {
+        let mut level = 0;
+        let mut current_env = env;
+        
+        while level < scope_level {
+            let parent = {
+                let parent = &current_env.borrow().parent;
+                parent.clone()
+            };
+            if let Some(parent) = parent {
+                level += 1;
+                current_env = parent.clone();
+            } else {
+                return false;
+            }
+        }
+        
+        let ret = current_env.borrow_mut().update_value(name, value);
+        ret
+    }
 
     pub fn get_value(&self, name: &str) -> Option<Value> {
         match self.values.get(name) {
@@ -46,5 +67,26 @@ impl Env {
             }
         }
     }
-    
+
+    pub fn get_value_at_level(env: EnvRef, name: &str, scope_level: i32) -> Option<Value> {
+        let mut level = 0;
+        let mut current_env = env;
+        
+        while level < scope_level {
+            let parent = {
+                let parent = &current_env.borrow().parent;
+                parent.clone()
+            };
+            if let Some(parent) = parent {
+                level += 1;
+                current_env = parent.clone();
+            } else {
+                return None;
+            }
+        }
+        
+        let value_opt = current_env.borrow().get_value(name);
+        
+        value_opt
+    }
 }

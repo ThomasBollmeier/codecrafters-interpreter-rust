@@ -6,7 +6,7 @@ use crate::frontend::stream::{BufferedStream, CharStream};
 use crate::frontend::tokens::{Token, TokenType};
 use std::collections::VecDeque;
 use std::vec;
-
+use crate::frontend::var_resolver::VarResolver;
 use super::ast::AstValue;
 
 pub struct Parser {
@@ -35,7 +35,11 @@ impl Parser {
             )));
         }
 
-        Ok(NonTerminal(program_node))
+        let mut resolver = VarResolver::new();
+        let mut ast = NonTerminal(program_node);
+        ast.accept_mut(&mut resolver);
+
+        Ok(ast)
     }
 
     fn declaration(&mut self, token: Token) -> Result<Ast, LoxError> {
@@ -317,7 +321,7 @@ impl Parser {
             return self.disjunction(token);
         };
         let mut assign_node = AstNode::new(AstType::Assignment, None);
-        assign_node.add_child(Terminal(token));
+        assign_node.add_child(self.var_ref(token)?);
         assign_node.add_child(Terminal(equal_token));
         assign_node.add_child(self.expression(None)?);
 
@@ -547,8 +551,8 @@ impl Parser {
             | TokenType::False
             | TokenType::Nil
             | TokenType::Number
-            | TokenType::Str
-            | TokenType::Identifier => Ok(Terminal(token)),
+            | TokenType::Str => Ok(Terminal(token)),
+            TokenType::Identifier => self.var_ref(token),
             TokenType::LeftParen => self.group(token),
             TokenType::Bang | TokenType::Minus => self.unary(token),
             _ => Err(Self::error("unexpected token")),
@@ -561,6 +565,13 @@ impl Parser {
         }
 
         Ok(expr)
+    }
+
+    fn var_ref(&mut self, token: Token) -> Result<Ast, LoxError> {
+        let mut var_ref_node =
+            AstNode::new(AstType::VarRef, Some(AstValue::Str(token.clone().lexeme)));
+        var_ref_node.add_child(Terminal(token));
+        Ok(NonTerminal(var_ref_node))
     }
 
     fn call(&mut self, callee: Ast) -> Result<Ast, LoxError> {
@@ -774,5 +785,39 @@ mod tests {
         );
 
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn var_resolution() {
+        let code = r#"
+        var a = "global";
+        {
+            fun showA() {
+                print a;
+            }
+
+            showA();
+            var a = "block";
+            showA();
+        }
+        "#;
+
+        let result = parse_program(code);
+
+        assert!(result.is_ok());
+    }
+    
+    #[test]
+    fn param_resolution() {
+        let code = r#"
+        fun foo(a) {
+            print a;
+        }
+        foo("hello");
+        "#;
+
+        let result = parse_program(code);
+
+        assert!(result.is_ok());
     }
 }

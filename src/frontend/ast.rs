@@ -20,6 +20,7 @@ pub enum AstType {
     Disjunction,
     Conjunction,
     Call,
+    VarRef,
 }
 
 #[derive(Clone)]
@@ -86,6 +87,10 @@ impl AstNode {
 
     pub fn get_children(&self) -> &Vec<Ast> {
         &self.children
+    }
+    
+    pub fn get_children_mut(&mut self) -> &mut Vec<Ast> {
+        &mut self.children
     }
 }
 

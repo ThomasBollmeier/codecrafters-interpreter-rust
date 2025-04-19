@@ -12,7 +12,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/frontend/var_resolver.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/frontend.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/frontend/ast.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/ast.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/frontend/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/parser.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/interpreter.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/interpreter/env.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter/env.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,14 +64,17 @@
     "Cargo.Test frontend::parser::tests::fun_calll.executor": "Debug",
     "Cargo.Test frontend::parser::tests::fun_decl.executor": "Debug",
     "Cargo.Test frontend::parser::tests::group.executor": "Run",
+    "Cargo.Test frontend::parser::tests::param_resolution.executor": "Run",
     "Cargo.Test frontend::parser::tests::print_statement.executor": "Run",
     "Cargo.Test frontend::parser::tests::unary.executor": "Run",
+    "Cargo.Test frontend::parser::tests::var_resolution.executor": "Debug",
     "Cargo.Test frontend::stream::tests::test_buffered_stream_advance.executor": "Run",
     "Cargo.Test frontend::stream::tests::test_buffered_stream_peek.executor": "Run",
     "Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many.executor": "Run",
     "Cargo.Test interpreter::tests.executor": "Run",
     "Cargo.Test interpreter::tests::eval_bool.executor": "Run",
     "Cargo.Test interpreter::tests::eval_concat.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_counter.executor": "Run",
     "Cargo.Test interpreter::tests::eval_for_stmt.executor": "Run",
     "Cargo.Test interpreter::tests::eval_group.executor": "Run",
     "Cargo.Test interpreter::tests::eval_negative.executor": "Run",
@@ -107,7 +116,7 @@
     <option name="runOnTheFly" value="true" />
     <option name="tool" value="Clippy" />
   </component>
-  <component name="RunManager" selected="Cargo.Test interpreter::tests::eval_return_stmt">
+  <component name="RunManager" selected="Cargo.All Tests">
     <configuration name="All Tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
       <option name="command" value="test" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -160,8 +169,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test frontend::parser::tests::fun_call" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::fun_call -- --exact" />
+    <configuration name="Test frontend::parser::tests::param_resolution" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::param_resolution -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -177,8 +186,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test frontend::parser::tests::fun_call_error" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::fun_call_error -- --exact" />
+    <configuration name="Test frontend::parser::tests::var_resolution" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::var_resolution -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -194,8 +203,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test frontend::parser::tests::fun_calll" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::fun_calll -- --exact" />
+    <configuration name="Test interpreter::tests::eval_counter" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib interpreter::tests::eval_counter -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -231,19 +240,19 @@
     <list>
       <item itemvalue="Cargo.Run codecrafters-interpreter" />
       <item itemvalue="Cargo.Test codecrafters-interpreter" />
+      <item itemvalue="Cargo.Test frontend::parser::tests::param_resolution" />
+      <item itemvalue="Cargo.Test frontend::parser::tests::var_resolution" />
+      <item itemvalue="Cargo.Test interpreter::tests::eval_counter" />
       <item itemvalue="Cargo.Test interpreter::tests::eval_return_stmt" />
-      <item itemvalue="Cargo.Test frontend::parser::tests::fun_call" />
-      <item itemvalue="Cargo.Test frontend::parser::tests::fun_call_error" />
-      <item itemvalue="Cargo.Test frontend::parser::tests::fun_calll" />
       <item itemvalue="Cargo.All Tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Cargo.Test interpreter::tests::eval_return_stmt" />
         <item itemvalue="Cargo.All Tests" />
-        <item itemvalue="Cargo.Test frontend::parser::tests::fun_call_error" />
-        <item itemvalue="Cargo.Test frontend::parser::tests::fun_call" />
-        <item itemvalue="Cargo.Test frontend::parser::tests::fun_calll" />
+        <item itemvalue="Cargo.Test frontend::parser::tests::param_resolution" />
+        <item itemvalue="Cargo.Test interpreter::tests::eval_counter" />
+        <item itemvalue="Cargo.Test frontend::parser::tests::var_resolution" />
+        <item itemvalue="Cargo.Test interpreter::tests::eval_return_stmt" />
       </list>
     </recent_temporary>
   </component>
@@ -295,7 +304,9 @@
       <workItem from="1744909401623" duration="100000" />
       <workItem from="1744909563150" duration="7673000" />
       <workItem from="1744924472368" duration="2543000" />
-      <workItem from="1744965576369" duration="3548000" />
+      <workItem from="1744965576369" duration="3700000" />
+      <workItem from="1745047072313" duration="5708000" />
+      <workItem from="1745066816819" duration="6366000" />
     </task>
     <servers />
   </component>

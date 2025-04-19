@@ -1,11 +1,11 @@
-use std::rc::Rc;
-use values::NativeFunction;
 use crate::common::LoxError;
 use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
 use crate::frontend::parser;
 use crate::frontend::tokens::{Literal, TokenType};
 use crate::interpreter::env::{Env, EnvRef};
 use crate::interpreter::values::{Callable, UserFunction, Value};
+use std::rc::Rc;
+use values::NativeFunction;
 
 mod env;
 mod native;
@@ -73,7 +73,6 @@ impl Interpreter {
                     Literal::Str(s) => Ok(Value::Str(s.clone())),
                     _ => Self::error("invalid literal value"),
                 },
-                TokenType::Identifier => self.eval_identifier(&token.lexeme),
                 _ => Self::error("unsupported token"),
             },
             Ast::NonTerminal(ast_node) => match ast_node.get_type() {
@@ -97,6 +96,7 @@ impl Interpreter {
                 AstType::Disjunction => self.eval_disjunction(ast_node),
                 AstType::Conjunction => self.eval_conjunction(ast_node),
                 AstType::Call => self.eval_call(ast_node),
+                AstType::VarRef => self.eval_var_ref(ast_node),
             },
         }
     }
@@ -132,7 +132,7 @@ impl Interpreter {
             Some(AstValue::Str(name)) => name.clone(),
             _ => return Self::error("invalid ast value"),
         };
-        let children= ast_node.get_children();
+        let children = ast_node.get_children();
         let mut params = Vec::new();
         let mut body = None;
         for child in children {
@@ -158,7 +158,9 @@ impl Interpreter {
             Rc::new(body),
         );
 
-        self.env.borrow_mut().set_value(name, Value::UserFunc(function));
+        self.env
+            .borrow_mut()
+            .set_value(name, Value::UserFunc(function));
 
         Ok(Value::Nil)
     }
@@ -392,12 +394,32 @@ impl Interpreter {
     fn eval_assignment(&self, assign_node: &AstNode) -> InterpreterResult {
         let children = assign_node.get_children();
         let lhs = &children[0];
-        let identifier = match lhs {
-            Ast::Terminal(token) => token.lexeme.clone(),
+        let lhs = match lhs {
+            Ast::NonTerminal(ast_node) if ast_node.get_type() == &AstType::VarRef => ast_node,
             _ => return Self::error("invalid lhs of assignment"),
         };
+        let identifier = match lhs.get_value() {
+            Some(AstValue::Str(identifier)) => identifier,
+            _ => return Self::error("invalid variable reference"),
+        };
+        let scope_level = match lhs.get_attr("scope_level") {
+            Some(AstValue::Int(level)) => *level,
+            _ => -1,
+        };
+
         let rhs_value = self.eval_ast(&children[2])?;
-        if self
+        if scope_level != -1 {
+            if Env::update_value_at_level(
+                self.env.clone(),
+                identifier.clone(),
+                rhs_value.clone(),
+                scope_level,
+            ) {
+                Ok(rhs_value)
+            } else {
+                Self::error(&format!("variable {identifier} does not exist"))
+            }
+        } else if self
             .env
             .borrow_mut()
             .update_value(identifier.clone(), rhs_value.clone())
@@ -449,10 +471,28 @@ impl Interpreter {
         }
     }
 
-    fn eval_identifier(&self, identifier: &str) -> InterpreterResult {
-        match self.env.borrow().get_value(identifier) {
-            Some(value) => Ok(value),
-            None => Self::error(&format!("identifier {identifier} is unknown")),
+    fn eval_var_ref(&self, ast_node: &AstNode) -> InterpreterResult {
+        let ast_value_opt = ast_node.get_value();
+        let identifier = match ast_value_opt {
+            Some(AstValue::Str(identifier)) => identifier,
+            _ => return Self::error("invalid variable reference"),
+        };
+
+        let scope_level = match ast_node.get_attr("scope_level") {
+            Some(AstValue::Int(level)) => *level,
+            _ => -1,
+        };
+
+        if scope_level != -1 {
+            match Env::get_value_at_level(self.env.clone(), identifier, scope_level) {
+                Some(value) => Ok(value),
+                None => Self::error(&format!("identifier {identifier} is unknown")),
+            }
+        } else {
+            match self.env.borrow().get_value(identifier) {
+                Some(value) => Ok(value),
+                None => Self::error(&format!("identifier {identifier} is unknown")),
+            }
         }
     }
 
@@ -651,4 +691,24 @@ mod tests {
         assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
     }
 
+    #[test]
+    fn eval_counter() {
+        let interpreter = Interpreter::new();
+        let code = r#"
+            var counter = 0;
+            {
+                fun increment() {
+                    counter = counter + 1;
+                    return counter;
+                }
+                print increment();
+
+                var counter = 0;
+
+                print increment();
+            }
+        "#;
+        let result = interpreter.run(code.to_string());
+        assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
+    }
 }
