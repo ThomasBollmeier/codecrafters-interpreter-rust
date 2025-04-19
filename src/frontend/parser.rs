@@ -37,7 +37,9 @@ impl Parser {
 
         let mut resolver = VarResolver::new();
         let mut ast = NonTerminal(program_node);
-        ast.accept_mut(&mut resolver);
+        if let Some(err) = resolver.resolve(&mut ast) {
+            return Err(err);
+        }
 
         Ok(ast)
     }

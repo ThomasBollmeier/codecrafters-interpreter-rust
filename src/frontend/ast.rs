@@ -56,6 +56,13 @@ impl AstNode {
     pub fn get_value(&self) -> &Option<AstValue> {
         &self.value
     }
+    
+    pub fn get_value_str(&self) -> Option<String> {
+        match &self.value {
+            Some(AstValue::Str(s)) => Some(s.clone()),
+            _ => None,
+        }
+    }
 
     pub fn set_attr_str(&mut self, key: String, value: &str) {
         self.attrs.insert(key, AstValue::Str(value.to_string()));
