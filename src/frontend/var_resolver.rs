@@ -9,6 +9,7 @@ pub struct VarResolver {
     scope: Rc<RefCell<Scope>>,
     error: Option<LoxError>,
     var_name_in_decl: Option<String>,
+    fun_nesting_level: i32,
 }
 
 impl VarResolver {
@@ -17,6 +18,7 @@ impl VarResolver {
             scope: Rc::new(RefCell::new(Scope::new(None, false))),
             error: None,
             var_name_in_decl: None,
+            fun_nesting_level: 0,
         }
     }
 
@@ -56,6 +58,7 @@ impl AstVisitorMut for VarResolver {
                         }
                         self.enter_scope(false);
                         self.enter_scope(true);
+                        self.fun_nesting_level += 1;
 
                         for child in node.get_children() {
                             if let Ast::Terminal(token) = child {
@@ -105,6 +108,12 @@ impl AstVisitorMut for VarResolver {
                             self.set_error("Variable name should be present");
                         }
                     }
+                    AstType::ReturnStmt => {
+                        if self.fun_nesting_level == 0 {
+                            self.set_error("Return statement outside of function");
+                            return;
+                        }
+                    }
                     _ => {}
                 }
 
@@ -126,6 +135,7 @@ impl AstVisitorMut for VarResolver {
                     AstType::FunDecl => {
                         self.exit_scope();
                         self.exit_scope();
+                        self.fun_nesting_level -= 1;
                     }
                     AstType::VarDecl => self.var_name_in_decl = None,
                     _ => {}
