@@ -168,10 +168,10 @@ impl Interpreter {
     fn eval_block(&self, ast_node: &AstNode) -> InterpreterResult {
         let children = ast_node.get_children();
         let stmts = &children[1..children.len() - 1]; // first + last child are braces
+        let interpreter = self.new_child();
 
-        let child_interpreter = self.new_child();
         for stmt in stmts {
-            let value = child_interpreter.eval_ast(stmt)?;
+            let value = interpreter.eval_ast(stmt)?;
             if let Value::Return(_) = &value {
                 return Ok(value);
             }

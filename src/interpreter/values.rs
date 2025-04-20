@@ -1,4 +1,4 @@
-use crate::frontend::ast::Ast;
+use crate::frontend::ast::{Ast, AstType};
 use crate::interpreter::{Interpreter, InterpreterResult};
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
@@ -90,8 +90,15 @@ impl Callable for UserFunction {
         for (param, arg) in self.params.iter().zip(args) {
             env.borrow_mut().set_value(param.clone(), arg);
         }
+        
+        let body = match &self.body.as_ref() {
+            Ast::NonTerminal(ast_node) if ast_node.get_type() == &AstType::Block => {
+                ast_node
+            }
+            _ => return Interpreter::error("Function body must be a block"),
+        };
 
-        let result = interpreter.eval_ast(&self.body.clone())?;
+        let result = interpreter.eval_block(body)?;
         if let Value::Return(value) = result {
             Ok(*value)
         } else {

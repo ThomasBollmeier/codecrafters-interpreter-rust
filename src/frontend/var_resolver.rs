@@ -14,7 +14,7 @@ pub struct VarResolver {
 impl VarResolver {
     pub fn new() -> VarResolver {
         VarResolver {
-            scope: Rc::new(RefCell::new(Scope::new(None))),
+            scope: Rc::new(RefCell::new(Scope::new(None, false))),
             error: None,
             var_name_in_decl: None,
         }
@@ -25,8 +25,8 @@ impl VarResolver {
         self.error.clone()
     }
 
-    fn enter_scope(&mut self) {
-        self.scope = Rc::new(RefCell::new(Scope::new_child(self.scope.clone())));
+    fn enter_scope(&mut self, is_param_scope: bool) {
+        self.scope = Rc::new(RefCell::new(Scope::new_child(self.scope.clone(), is_param_scope)));
     }
 
     fn exit_scope(&mut self) {
@@ -45,27 +45,41 @@ impl AstVisitorMut for VarResolver {
             Ast::NonTerminal(node) => {
                 match node.get_type() {
                     AstType::Block | AstType::ForStmt => {
-                        self.enter_scope();
+                        self.enter_scope(false);
                     }
                     AstType::FunDecl => {
                         if let Some(fun_name) = node.get_value_str() {
                             self.scope.borrow_mut().add_variable(fun_name);
                         } else {
                             self.set_error("Function name should be present");
+                            return;
                         }
-                        self.enter_scope();
-                        self.enter_scope();
+                        self.enter_scope(false);
+                        self.enter_scope(true);
 
                         for child in node.get_children() {
                             if let Ast::Terminal(token) = child {
                                 if token.token_type == TokenType::Identifier {
-                                    self.scope.borrow_mut().add_variable(token.lexeme.clone());
+                                    let var_name = token.lexeme.clone();
+                                    if self.scope.borrow().has_variable(&var_name) {
+                                        self.set_error("Variable already declared in this scope");
+                                        return;
+                                    }
+                                    self.scope.borrow_mut().add_variable(var_name);
                                 }
                             }
                         }
                     }
                     AstType::VarDecl => {
                         if let Some(var_name) = node.get_value_str() {
+                            let already_declared = {
+                                let scope = self.scope.borrow();
+                                scope.has_variable(&var_name) && !scope.is_global()
+                            };
+                            if already_declared {
+                                self.set_error("Variable already declared in this scope");
+                                return;
+                            } 
                             self.var_name_in_decl = Some(var_name.clone());
                             self.scope.borrow_mut().add_variable(var_name);
                         } else {
@@ -125,13 +139,15 @@ impl AstVisitorMut for VarResolver {
 struct Scope {
     parent: Option<Rc<RefCell<Scope>>>,
     variables: HashSet<String>,
+    is_param_scope: bool,
 }
 
 impl Scope {
-    fn new(parent: Option<Rc<RefCell<Scope>>>) -> Self {
+    fn new(parent: Option<Rc<RefCell<Scope>>>, is_param_scope: bool) -> Self {
         Scope {
             parent,
             variables: HashSet::new(),
+            is_param_scope
         }
     }
 
@@ -143,12 +159,25 @@ impl Scope {
         self.parent.is_none()
     }
 
-    fn new_child(scope: Rc<RefCell<Scope>>) -> Self {
-        Scope::new(Some(scope))
+    fn new_child(scope: Rc<RefCell<Scope>>, is_param_scope: bool) -> Self {
+        Scope::new(Some(scope), is_param_scope)
     }
 
     fn add_variable(&mut self, name: String) {
         self.variables.insert(name);
+    }
+
+    fn has_variable(&self, name: &str) -> bool {
+        if self.variables.contains(name) {
+            return true;
+        }
+        match &self.parent {
+            Some(parent) => {
+                let p = parent.borrow();
+                p.is_param_scope && p.variables.contains(name)
+            },
+            None => false,
+        }
     }
 
     fn get_var_scope_level(&self, name: String) -> Option<u32> {
