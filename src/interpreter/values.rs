@@ -11,6 +11,7 @@ pub enum Value {
     Str(String),
     NativeFunc(NativeFunction),
     UserFunc(UserFunction),
+    ClassDef(Class),
     Return(Box<Value>),
 }
 
@@ -23,6 +24,7 @@ impl Display for Value {
             Value::Str(s) => write!(f, "{}", s),
             Value::NativeFunc(_) => write!(f, "<native fn>"),
             Value::UserFunc(func) => write!(f, "<fn {}>", func.get_name()),
+            Value::ClassDef(class) => write!(f, "{}", class.get_name()),
             Value::Return(value) => write!(f, "return value: {}", value),
         }
     }
@@ -104,5 +106,29 @@ impl Callable for UserFunction {
         } else {
             Ok(result)
         }
+    }
+}
+
+#[derive(Clone)]
+pub struct Class {
+    name: String,
+    methods: Vec<UserFunction>,
+}
+
+impl Class {
+    pub fn new(name: String, methods: Vec<UserFunction>) -> Class {
+        Class { name, methods }
+    }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn get_methods(&self) -> &Vec<UserFunction> {
+        &self.methods
+    }
+
+    pub fn add_method(&mut self, method: UserFunction) {
+        self.methods.push(method);
     }
 }

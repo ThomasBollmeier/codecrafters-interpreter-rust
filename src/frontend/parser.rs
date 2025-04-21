@@ -48,8 +48,33 @@ impl Parser {
         match token.token_type {
             TokenType::Var => self.var_decl(token),
             TokenType::Fun => self.fun_decl(),
+            TokenType::Class => self.class_decl(),
             _ => self.statement(token),
         }
+    }
+
+    fn class_decl(&mut self) -> Result<Ast, LoxError> {
+        let class_name = self.consume(&vec![TokenType::Identifier])?;
+        let mut class_node = AstNode::new(
+            AstType::ClassDecl,
+            Some(AstValue::Str(class_name.lexeme.clone())),
+        );
+        self.consume(&vec![TokenType::LeftBrace])?;
+
+        loop {
+            let next_token = match self.peek() {
+                Some(token) => token,
+                None => return Err(Self::error("expected token, but got none")),
+            };
+            if next_token.token_type == TokenType::RightBrace {
+                self.advance()?;
+                break;
+            }
+            let method = self.fun_decl()?;
+            class_node.add_child(method);
+        }
+
+        Ok(NonTerminal(class_node))
     }
 
     fn fun_decl(&mut self) -> Result<Ast, LoxError> {

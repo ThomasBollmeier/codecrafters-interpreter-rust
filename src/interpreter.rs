@@ -3,7 +3,7 @@ use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
 use crate::frontend::parser;
 use crate::frontend::tokens::{Literal, TokenType};
 use crate::interpreter::env::{Env, EnvRef};
-use crate::interpreter::values::{Callable, UserFunction, Value};
+use crate::interpreter::values::{Callable, UserFunction, Value, Class};
 use std::rc::Rc;
 use values::NativeFunction;
 
@@ -79,6 +79,7 @@ impl Interpreter {
                 AstType::Program => self.eval_program(ast_node),
                 AstType::VarDecl => self.eval_var_decl(ast_node),
                 AstType::FunDecl => self.eval_fun_decl(ast_node),
+                AstType::ClassDecl => self.eval_class_decl(ast_node),
                 AstType::Block => self.eval_block(ast_node),
                 AstType::IfStmt => self.eval_if_stmt(ast_node),
                 AstType::WhileStmt => self.eval_while_stmt(ast_node),
@@ -128,10 +129,21 @@ impl Interpreter {
     }
 
     fn eval_fun_decl(&self, ast_node: &AstNode) -> InterpreterResult {
-        let name = match ast_node.get_value() {
-            Some(AstValue::Str(name)) => name.clone(),
-            _ => return Self::error("invalid ast value"),
-        };
+
+        let function = self.create_user_function(ast_node)?;
+
+        self.env
+            .borrow_mut()
+            .set_value(function.get_name().to_string(), Value::UserFunc(function));
+
+        Ok(Value::Nil)
+    }
+
+    fn create_user_function(&self, ast_node: &AstNode) -> Result<UserFunction, LoxError> {
+        let name = ast_node
+            .get_value_str()
+            .ok_or(LoxError::new_in_eval_ctx(String::from("invalid ast value")))?;
+
         let children = ast_node.get_children();
         let mut params = Vec::new();
         let mut body = None;
@@ -145,7 +157,7 @@ impl Interpreter {
                 Ast::NonTerminal(ast_node) if ast_node.get_type() == &AstType::Block => {
                     body = Some(child);
                 }
-                _ => return Self::error("invalid ast value"),
+                _ => return Err(LoxError::new_in_eval_ctx(String::from("invalid ast value"))),
             }
         }
 
@@ -158,9 +170,28 @@ impl Interpreter {
             Rc::new(body),
         );
 
+        Ok(function)
+    }
+
+    fn eval_class_decl(&self, ast_node: &AstNode) -> InterpreterResult {
+        let class_name = ast_node
+            .get_value_str()
+            .ok_or(LoxError::new_in_eval_ctx("invalid class name".to_string()))?;
+
+        let mut methods = Vec::new();
+        for child in ast_node.get_children() {
+            if let Ast::NonTerminal(ast_node) = child {
+                if ast_node.get_type() == &AstType::FunDecl {
+                    methods.push(self.create_user_function(ast_node)?);
+                }
+            }
+        }
+
+        let class = Class::new(class_name, methods);
+
         self.env
             .borrow_mut()
-            .set_value(name, Value::UserFunc(function));
+            .set_value(class.get_name().to_string(), Value::ClassDef(class));
 
         Ok(Value::Nil)
     }

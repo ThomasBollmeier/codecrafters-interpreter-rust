@@ -11,9 +11,7 @@
     </cargoProject>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/frontend/var_resolver.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/var_resolver.rs" afterDir="false" />
-    </list>
+    <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -303,7 +301,7 @@
       <workItem from="1745066816819" duration="6979000" />
       <workItem from="1745092916526" duration="4486000" />
       <workItem from="1745137742761" duration="1374000" />
-      <workItem from="1745143143420" duration="3074000" />
+      <workItem from="1745143143420" duration="3676000" />
     </task>
     <servers />
   </component>

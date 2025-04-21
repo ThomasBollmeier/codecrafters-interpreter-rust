@@ -6,6 +6,7 @@ pub enum AstType {
     Program,
     VarDecl,
     FunDecl,
+    ClassDecl,
     Block,
     IfStmt,
     WhileStmt,
