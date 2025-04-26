@@ -3,7 +3,7 @@ use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
 use crate::frontend::parser;
 use crate::frontend::tokens::{Literal, TokenType};
 use crate::interpreter::env::{Env, EnvRef};
-use crate::interpreter::values::{Callable, UserFunction, Value, Class};
+use crate::interpreter::values::{Callable, UserFunction, Value, Class, class_call};
 use std::rc::Rc;
 use values::NativeFunction;
 
@@ -187,7 +187,7 @@ impl Interpreter {
             }
         }
 
-        let class = Class::new(class_name, methods);
+        let class = Rc::new(Class::new(class_name, methods));
 
         self.env
             .borrow_mut()
@@ -498,6 +498,7 @@ impl Interpreter {
         match callee {
             Value::NativeFunc(native_fn) => native_fn.call(args),
             Value::UserFunc(user_fn) => user_fn.call(args),
+            Value::ClassDef(class) => class_call(class, args),
             _ => Self::error("invalid callee"),
         }
     }

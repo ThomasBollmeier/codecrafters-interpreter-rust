@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::frontend::ast::{Ast, AstType};
 use crate::interpreter::{Interpreter, InterpreterResult};
 use std::fmt::{Display, Formatter};
@@ -11,7 +12,8 @@ pub enum Value {
     Str(String),
     NativeFunc(NativeFunction),
     UserFunc(UserFunction),
-    ClassDef(Class),
+    ClassDef(Rc<Class>),
+    Instance(Instance),
     Return(Box<Value>),
 }
 
@@ -25,6 +27,7 @@ impl Display for Value {
             Value::NativeFunc(_) => write!(f, "<native fn>"),
             Value::UserFunc(func) => write!(f, "<fn {}>", func.get_name()),
             Value::ClassDef(class) => write!(f, "{}", class.get_name()),
+            Value::Instance(instance) => write!(f, "{} instance", instance.class.get_name()),
             Value::Return(value) => write!(f, "return value: {}", value),
         }
     }
@@ -130,5 +133,33 @@ impl Class {
 
     pub fn add_method(&mut self, method: UserFunction) {
         self.methods.push(method);
+    }
+}
+
+pub fn class_call(class: Rc<Class>, _args: Vec<Value>) -> InterpreterResult {
+    let instance = Instance::new(class.clone());
+    Ok(Value::Instance(instance))
+}
+
+#[derive(Clone)]
+pub struct Instance {
+    class: Rc<Class>,
+    fields: HashMap<String, Value>,
+}
+
+impl Instance {
+    pub fn new(class: Rc<Class>) -> Instance {
+        Instance {
+            class,
+            fields: HashMap::new(),
+        }
+    }
+
+    pub fn set_field(&mut self, name: String, value: Value) {
+        self.fields.insert(name, value);
+    }
+
+    pub fn get_field(&self, name: &str) -> Option<Value> {
+        self.fields.get(name).cloned()
     }
 }
