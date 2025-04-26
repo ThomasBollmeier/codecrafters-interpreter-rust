@@ -3,7 +3,7 @@ use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
 use crate::frontend::parser;
 use crate::frontend::tokens::{Literal, TokenType};
 use crate::interpreter::env::{Env, EnvRef};
-use crate::interpreter::values::{Callable, UserFunction, Value, Class, class_call};
+use crate::interpreter::values::{class_call, Callable, Class, UserFunction, Value};
 use std::rc::Rc;
 use values::NativeFunction;
 
@@ -129,7 +129,6 @@ impl Interpreter {
     }
 
     fn eval_fun_decl(&self, ast_node: &AstNode) -> InterpreterResult {
-
         let function = self.create_user_function(ast_node)?;
 
         self.env
@@ -346,6 +345,10 @@ impl Interpreter {
             _ => return Self::error("expected binary operator"),
         };
 
+        if operator == "." {
+            return self.eval_instance_member(ast_node);
+        }
+
         let children = ast_node.get_children();
         let left = self.eval_ast(&children[0])?;
         let right = self.eval_ast(&children[2])?;
@@ -422,42 +425,95 @@ impl Interpreter {
         }
     }
 
+    fn eval_instance_member(&self, path: &AstNode) -> InterpreterResult {
+        let children = path.get_children();
+        if children.len() != 3 {
+            return Self::error("invalid instance member access");
+        }
+
+        let instance = self.eval_ast(&children[0])?;
+        if let Value::Instance(instance) = instance {
+            let field_name = Self::get_field_name(&children[2])?;
+            instance
+                .borrow()
+                .get_field(&field_name)
+                .ok_or(LoxError::new_in_eval_ctx(format!(
+                    "Unknown field {field_name}"
+                )))
+        } else {
+            Self::error("invalid instance")
+        }
+    }
+
     fn eval_assignment(&self, assign_node: &AstNode) -> InterpreterResult {
         let children = assign_node.get_children();
         let lhs = &children[0];
-        let lhs = match lhs {
-            Ast::NonTerminal(ast_node) if ast_node.get_type() == &AstType::VarRef => ast_node,
+        let (lhs, is_lhs_identifier) = match lhs {
+            Ast::NonTerminal(ast_node) => match ast_node.get_type() {
+                AstType::VarRef => (ast_node, true),
+                _ => (ast_node, false),
+            },
             _ => return Self::error("invalid lhs of assignment"),
-        };
-        let identifier = match lhs.get_value() {
-            Some(AstValue::Str(identifier)) => identifier,
-            _ => return Self::error("invalid variable reference"),
-        };
-        let scope_level = match lhs.get_attr("scope_level") {
-            Some(AstValue::Int(level)) => *level,
-            _ => -1,
         };
 
         let rhs_value = self.eval_ast(&children[2])?;
-        if scope_level != -1 {
-            if Env::update_value_at_level(
-                self.env.clone(),
-                identifier.clone(),
-                rhs_value.clone(),
-                scope_level,
-            ) {
+
+        if is_lhs_identifier {
+            let identifier = lhs.get_value_str().ok_or(LoxError::new_in_eval_ctx(
+                "invalid variable reference".to_string(),
+            ))?;
+            let scope_level = match lhs.get_attr("scope_level") {
+                Some(AstValue::Int(level)) => *level,
+                _ => -1,
+            };
+
+            if scope_level != -1 {
+                if Env::update_value_at_level(
+                    self.env.clone(),
+                    identifier.clone(),
+                    rhs_value.clone(),
+                    scope_level,
+                ) {
+                    Ok(rhs_value)
+                } else {
+                    Self::error(&format!("variable {identifier} does not exist"))
+                }
+            } else if self
+                .env
+                .borrow_mut()
+                .update_value(identifier.clone(), rhs_value.clone())
+            {
                 Ok(rhs_value)
             } else {
                 Self::error(&format!("variable {identifier} does not exist"))
             }
-        } else if self
-            .env
-            .borrow_mut()
-            .update_value(identifier.clone(), rhs_value.clone())
-        {
-            Ok(rhs_value)
         } else {
-            Self::error(&format!("variable {identifier} does not exist"))
+            self.set_instance_field(lhs, rhs_value)
+        }
+    }
+
+    fn set_instance_field(&self, field_path: &AstNode, value: Value) -> InterpreterResult {
+        let children = field_path.get_children();
+        let instance = self.eval_ast(&children[0])?;
+        if let Value::Instance(instance) = instance {
+            let field_name = Self::get_field_name(&children[2])?;
+            instance.borrow_mut().set_field(field_name, value.clone());
+            Ok(value)
+        } else {
+            Self::error("invalid instance")
+        }
+    }
+
+    fn get_field_name(ast: &Ast) -> Result<String, LoxError> {
+        match ast {
+            Ast::Terminal(_) => Err(LoxError::new_in_eval_ctx("invalid field name".to_string())),
+            Ast::NonTerminal(ast_node) if ast_node.get_type() == &AstType::VarRef => {
+                match ast_node.get_value_str() {
+                    Some(name) => Ok(name),
+                    None => Err(LoxError::new_in_eval_ctx("invalid field name".to_string())),
+                }
+            }
+            _ => Err(LoxError::new_in_eval_ctx("invalid field name".to_string())),
         }
     }
 
@@ -739,6 +795,20 @@ mod tests {
 
                 print increment();
             }
+        "#;
+        let result = interpreter.run(code.to_string());
+        assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
+    }
+
+    #[test]
+    fn eval_set_field() {
+        let interpreter = Interpreter::new();
+        let code = r#"
+            class Foo {}
+            var foo = Foo();
+            foo.bar = 42;
+
+            print foo.bar;
         "#;
         let result = interpreter.run(code.to_string());
         assert!(result.is_ok(), "{}", result.err().unwrap().get_message());

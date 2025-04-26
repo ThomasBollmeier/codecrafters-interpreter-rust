@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use crate::frontend::ast::{Ast, AstType};
 use crate::interpreter::{Interpreter, InterpreterResult};
@@ -13,7 +14,7 @@ pub enum Value {
     NativeFunc(NativeFunction),
     UserFunc(UserFunction),
     ClassDef(Rc<Class>),
-    Instance(Instance),
+    Instance(Rc<RefCell<Instance>>),
     Return(Box<Value>),
 }
 
@@ -27,7 +28,7 @@ impl Display for Value {
             Value::NativeFunc(_) => write!(f, "<native fn>"),
             Value::UserFunc(func) => write!(f, "<fn {}>", func.get_name()),
             Value::ClassDef(class) => write!(f, "{}", class.get_name()),
-            Value::Instance(instance) => write!(f, "{} instance", instance.class.get_name()),
+            Value::Instance(instance) => write!(f, "{} instance", instance.borrow().class.get_name()),
             Value::Return(value) => write!(f, "return value: {}", value),
         }
     }
@@ -138,7 +139,7 @@ impl Class {
 
 pub fn class_call(class: Rc<Class>, _args: Vec<Value>) -> InterpreterResult {
     let instance = Instance::new(class.clone());
-    Ok(Value::Instance(instance))
+    Ok(Value::Instance(Rc::new(RefCell::new(instance))))
 }
 
 #[derive(Clone)]

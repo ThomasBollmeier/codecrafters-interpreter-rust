@@ -334,25 +334,54 @@ impl Parser {
     }
 
     fn assignment(&mut self, token: Token) -> Result<Ast, LoxError> {
-        let is_valid_lhs = token.token_type == TokenType::Identifier;
-        if !is_valid_lhs {
-            return self.disjunction(token);
-        }
+        let lhs = self.disjunction(token)?;
+        
         let equal_token = if let Some(next_token) = self.peek() {
             if next_token.token_type == TokenType::Equal {
                 self.consume(&vec![TokenType::Equal])?
             } else {
-                return self.disjunction(token);
+                return Ok(lhs);
             }
         } else {
-            return self.disjunction(token);
+            return Ok(lhs);
         };
+        
+        if !Self::is_valid_lhs(&lhs) {
+            return Err(Self::error("invalid left-hand side in assignment"));
+        }
+        
         let mut assign_node = AstNode::new(AstType::Assignment, None);
-        assign_node.add_child(self.var_ref(token)?);
+        assign_node.add_child(lhs);
         assign_node.add_child(Terminal(equal_token));
         assign_node.add_child(self.expression(None)?);
 
         Ok(NonTerminal(assign_node))
+    }
+    
+    fn is_valid_lhs(ast: &Ast) -> bool {
+        match ast {  
+            Terminal(_) => false,
+            NonTerminal(node) => {
+                match node.get_type() {
+                    AstType::VarRef => true,
+                    AstType::Binary => {
+                        if let Some(value) = node.get_value_str() {
+                            if value != "."{
+                                return false;
+                            }
+                            let children = node.get_children();
+                            if let Some(NonTerminal(child)) = children.get(2) {
+                                if child.get_type() == &AstType::VarRef {
+                                    return true;
+                                }
+                            }
+                        }
+                        false
+                    }
+                    _ => false,
+                }
+            }
+        }
     }
 
     fn disjunction(&mut self, first_token: Token) -> Result<Ast, LoxError> {
@@ -521,12 +550,41 @@ impl Parser {
         let mut next_token = token;
 
         loop {
-            let operand = self.atom(next_token)?;
+            let operand = self.path(next_token)?;
             operands.push_back(operand);
 
             match self.peek() {
                 Some(token) => match token.token_type {
                     TokenType::Star | TokenType::Slash => {}
+                    _ => break,
+                },
+                None => break,
+            }
+
+            let operator = self.advance()?.unwrap();
+            operators.push_back(operator);
+
+            next_token = self
+                .advance()?
+                .ok_or(Self::error("expected operand but got none"))?;
+        }
+
+        Ok(Parser::left_assoc_bin_ast(&mut operands, &mut operators))
+    }
+
+    fn path(&mut self, token: Token) -> Result<Ast, LoxError> {
+        let mut operands = VecDeque::new();
+        let mut operators = VecDeque::new();
+
+        let mut next_token = token;
+
+        loop {
+            let operand = self.atom(next_token)?;
+            operands.push_back(operand);
+
+            match self.peek() {
+                Some(token) => match token.token_type {
+                    TokenType::Dot => {}
                     _ => break,
                 },
                 None => break,
@@ -841,6 +899,20 @@ mod tests {
             print a;
         }
         foo("hello");
+        "#;
+
+        let result = parse_program(code);
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn field_setter() {
+        let code = r#"
+        class Spaceship {}
+        
+        var ship = Spaceship();
+        ship.length = 42;
         "#;
 
         let result = parse_program(code);

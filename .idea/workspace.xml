@@ -13,6 +13,7 @@
   <component name="ChangeListManager">
     <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/frontend/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/parser.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/interpreter.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/interpreter/values.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter/values.rs" afterDir="false" />
     </list>
@@ -47,67 +48,69 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Cargo.All Tests.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Run codecrafters-interpreter (1).executor&quot;: &quot;Debug&quot;,
-    &quot;Cargo.Run codecrafters-interpreter (2).executor&quot;: &quot;Debug&quot;,
-    &quot;Cargo.Run codecrafters-interpreter.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test frontend::parser::tests::binary.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test frontend::parser::tests::for_stmt.executor&quot;: &quot;Debug&quot;,
-    &quot;Cargo.Test frontend::parser::tests::fun_call.executor&quot;: &quot;Debug&quot;,
-    &quot;Cargo.Test frontend::parser::tests::fun_call_error.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test frontend::parser::tests::fun_calll.executor&quot;: &quot;Debug&quot;,
-    &quot;Cargo.Test frontend::parser::tests::fun_decl.executor&quot;: &quot;Debug&quot;,
-    &quot;Cargo.Test frontend::parser::tests::group.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test frontend::parser::tests::param_resolution.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test frontend::parser::tests::print_statement.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test frontend::parser::tests::unary.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test frontend::parser::tests::var_resolution.executor&quot;: &quot;Debug&quot;,
-    &quot;Cargo.Test frontend::stream::tests::test_buffered_stream_advance.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test frontend::stream::tests::test_buffered_stream_peek.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_bool.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_concat.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_counter.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_for_stmt.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_group.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_negative.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_nil.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_not.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_number.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_return_stmt.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test interpreter::tests::eval_str.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.Test stream::tests.executor&quot;: &quot;Run&quot;,
-    &quot;Cargo.clean.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ChatTagsLlmMigration&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.CodyAccountHistoryMigration&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.CodyAccountsIdsRefresh&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.CodyAssignOrphanedChatsToActiveAccount&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.CodyConvertUrlToCodebaseName&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.CodyHistoryLlmMigration&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.CodyMigrateChatHistory-v2&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.CodyProjectSettingsMigration&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.DeprecatedChatLlmMigration&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ToggleCodyToolWindowAfterMigration&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
-    &quot;org.rust.disableDetachedFileInspection/home/drbolle/codecrafters/codecrafters-interpreter-rust/src/common.rs&quot;: &quot;true&quot;,
-    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Cargo.All Tests.executor": "Run",
+    "Cargo.Run codecrafters-interpreter (1).executor": "Debug",
+    "Cargo.Run codecrafters-interpreter (2).executor": "Debug",
+    "Cargo.Run codecrafters-interpreter.executor": "Run",
+    "Cargo.Test frontend::parser::tests::binary.executor": "Run",
+    "Cargo.Test frontend::parser::tests::field_setter.executor": "Debug",
+    "Cargo.Test frontend::parser::tests::for_stmt.executor": "Debug",
+    "Cargo.Test frontend::parser::tests::fun_call.executor": "Debug",
+    "Cargo.Test frontend::parser::tests::fun_call_error.executor": "Run",
+    "Cargo.Test frontend::parser::tests::fun_calll.executor": "Debug",
+    "Cargo.Test frontend::parser::tests::fun_decl.executor": "Debug",
+    "Cargo.Test frontend::parser::tests::group.executor": "Run",
+    "Cargo.Test frontend::parser::tests::param_resolution.executor": "Run",
+    "Cargo.Test frontend::parser::tests::print_statement.executor": "Run",
+    "Cargo.Test frontend::parser::tests::unary.executor": "Run",
+    "Cargo.Test frontend::parser::tests::var_resolution.executor": "Debug",
+    "Cargo.Test frontend::stream::tests::test_buffered_stream_advance.executor": "Run",
+    "Cargo.Test frontend::stream::tests::test_buffered_stream_peek.executor": "Run",
+    "Cargo.Test frontend::stream::tests::test_buffered_stream_peek_many.executor": "Run",
+    "Cargo.Test interpreter::tests.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_bool.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_concat.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_counter.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_for_stmt.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_group.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_negative.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_nil.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_not.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_number.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_return_stmt.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_set_field.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_str.executor": "Run",
+    "Cargo.Test stream::tests.executor": "Run",
+    "Cargo.clean.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ChatTagsLlmMigration": "true",
+    "RunOnceActivity.CodyAccountHistoryMigration": "true",
+    "RunOnceActivity.CodyAccountsIdsRefresh": "true",
+    "RunOnceActivity.CodyAssignOrphanedChatsToActiveAccount": "true",
+    "RunOnceActivity.CodyConvertUrlToCodebaseName": "true",
+    "RunOnceActivity.CodyHistoryLlmMigration": "true",
+    "RunOnceActivity.CodyMigrateChatHistory-v2": "true",
+    "RunOnceActivity.CodyProjectSettingsMigration": "true",
+    "RunOnceActivity.DeprecatedChatLlmMigration": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.ToggleCodyToolWindowAfterMigration": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.rust.reset.selective.auto.import": "true",
+    "git-widget-placeholder": "master",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "org.rust.disableDetachedFileInspection/home/drbolle/codecrafters/codecrafters-interpreter-rust/src/common.rs": "true",
+    "org.rust.first.attach.projects": "true",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RsExternalLinterProjectSettings">
     <option name="runOnTheFly" value="true" />
     <option name="tool" value="Clippy" />
@@ -165,8 +168,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test frontend::parser::tests::param_resolution" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::param_resolution -- --exact" />
+    <configuration name="Test frontend::parser::tests::field_setter" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::field_setter -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -182,8 +185,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test frontend::parser::tests::var_resolution" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::var_resolution -- --exact" />
+    <configuration name="Test frontend::parser::tests::param_resolution" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::param_resolution -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -216,8 +219,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test interpreter::tests::eval_return_stmt" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib interpreter::tests::eval_return_stmt -- --exact" />
+    <configuration name="Test interpreter::tests::eval_set_field" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib interpreter::tests::eval_set_field -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -236,19 +239,19 @@
     <list>
       <item itemvalue="Cargo.Run codecrafters-interpreter" />
       <item itemvalue="Cargo.Test codecrafters-interpreter" />
+      <item itemvalue="Cargo.Test frontend::parser::tests::field_setter" />
+      <item itemvalue="Cargo.Test interpreter::tests::eval_set_field" />
       <item itemvalue="Cargo.Test frontend::parser::tests::param_resolution" />
-      <item itemvalue="Cargo.Test frontend::parser::tests::var_resolution" />
       <item itemvalue="Cargo.Test interpreter::tests::eval_counter" />
-      <item itemvalue="Cargo.Test interpreter::tests::eval_return_stmt" />
       <item itemvalue="Cargo.All Tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Cargo.All Tests" />
+        <item itemvalue="Cargo.Test interpreter::tests::eval_set_field" />
+        <item itemvalue="Cargo.Test frontend::parser::tests::field_setter" />
         <item itemvalue="Cargo.Test frontend::parser::tests::param_resolution" />
         <item itemvalue="Cargo.Test interpreter::tests::eval_counter" />
-        <item itemvalue="Cargo.Test frontend::parser::tests::var_resolution" />
-        <item itemvalue="Cargo.Test interpreter::tests::eval_return_stmt" />
       </list>
     </recent_temporary>
   </component>
@@ -308,7 +311,8 @@
       <workItem from="1745143143420" duration="3676000" />
       <workItem from="1745223948287" duration="3283000" />
       <workItem from="1745656592267" duration="469000" />
-      <workItem from="1745657158721" duration="1507000" />
+      <workItem from="1745657158721" duration="5087000" />
+      <workItem from="1745662852799" duration="3682000" />
     </task>
     <servers />
   </component>
