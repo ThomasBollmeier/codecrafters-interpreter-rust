@@ -13,7 +13,6 @@
   <component name="ChangeListManager">
     <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/frontend/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/parser.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/interpreter.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/interpreter/values.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter/values.rs" afterDir="false" />
     </list>
@@ -75,6 +74,7 @@
     "Cargo.Test interpreter::tests::eval_counter.executor": "Run",
     "Cargo.Test interpreter::tests::eval_for_stmt.executor": "Run",
     "Cargo.Test interpreter::tests::eval_group.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_method_call.executor": "Run",
     "Cargo.Test interpreter::tests::eval_negative.executor": "Run",
     "Cargo.Test interpreter::tests::eval_nil.executor": "Run",
     "Cargo.Test interpreter::tests::eval_not.executor": "Run",
@@ -107,7 +107,7 @@
     "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
     "org.rust.disableDetachedFileInspection/home/drbolle/codecrafters/codecrafters-interpreter-rust/src/common.rs": "true",
     "org.rust.first.attach.projects": "true",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "language.rust.cargo.check",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -115,7 +115,7 @@
     <option name="runOnTheFly" value="true" />
     <option name="tool" value="Clippy" />
   </component>
-  <component name="RunManager" selected="Cargo.All Tests">
+  <component name="RunManager" selected="Cargo.Test interpreter::tests::eval_method_call">
     <configuration name="All Tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
       <option name="command" value="test" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -202,8 +202,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test interpreter::tests::eval_counter" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib interpreter::tests::eval_counter -- --exact" />
+    <configuration name="Test interpreter::tests::eval_method_call" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib interpreter::tests::eval_method_call -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -239,19 +239,19 @@
     <list>
       <item itemvalue="Cargo.Run codecrafters-interpreter" />
       <item itemvalue="Cargo.Test codecrafters-interpreter" />
+      <item itemvalue="Cargo.Test interpreter::tests::eval_method_call" />
       <item itemvalue="Cargo.Test frontend::parser::tests::field_setter" />
       <item itemvalue="Cargo.Test interpreter::tests::eval_set_field" />
       <item itemvalue="Cargo.Test frontend::parser::tests::param_resolution" />
-      <item itemvalue="Cargo.Test interpreter::tests::eval_counter" />
       <item itemvalue="Cargo.All Tests" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Cargo.Test interpreter::tests::eval_method_call" />
         <item itemvalue="Cargo.All Tests" />
         <item itemvalue="Cargo.Test interpreter::tests::eval_set_field" />
         <item itemvalue="Cargo.Test frontend::parser::tests::field_setter" />
         <item itemvalue="Cargo.Test frontend::parser::tests::param_resolution" />
-        <item itemvalue="Cargo.Test interpreter::tests::eval_counter" />
       </list>
     </recent_temporary>
   </component>
@@ -312,7 +312,7 @@
       <workItem from="1745223948287" duration="3283000" />
       <workItem from="1745656592267" duration="469000" />
       <workItem from="1745657158721" duration="5087000" />
-      <workItem from="1745662852799" duration="3682000" />
+      <workItem from="1745662852799" duration="5638000" />
     </task>
     <servers />
   </component>

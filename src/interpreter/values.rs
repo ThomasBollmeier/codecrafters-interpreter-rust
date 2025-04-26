@@ -4,6 +4,7 @@ use crate::frontend::ast::{Ast, AstType};
 use crate::interpreter::{Interpreter, InterpreterResult};
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
+use crate::common::LoxError;
 
 #[derive(Clone)]
 pub enum Value {
@@ -132,6 +133,15 @@ impl Class {
         &self.methods
     }
 
+    pub fn get_method(&self, name: &str) -> Option<&UserFunction> {
+        for method in &self.methods {
+            if method.get_name() == name {
+                return Some(method)
+            }
+        }
+        None
+    }
+
     pub fn add_method(&mut self, method: UserFunction) {
         self.methods.push(method);
     }
@@ -160,7 +170,23 @@ impl Instance {
         self.fields.insert(name, value);
     }
 
-    pub fn get_field(&self, name: &str) -> Option<Value> {
-        self.fields.get(name).cloned()
+    pub fn get_member(&self, name: &str) -> Option<Value> {
+        match self.fields.get(name) {
+            Some(value) => Some(value.clone()),
+            None => {
+                if let Some(method) = self.class.get_method(name) {
+                    return Some(Value::UserFunc(method.clone()));
+                }
+                None
+            }
+        }
+    }
+
+    pub fn call_method(&self, name: &str, args: Vec<Value>) -> InterpreterResult {
+        let method = self.class
+            .get_method(name)
+            .ok_or(LoxError::new_in_eval_ctx(format!("unknown method {}", name)))?;
+
+        method.call(args)
     }
 }

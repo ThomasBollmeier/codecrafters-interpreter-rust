@@ -3,7 +3,8 @@ use crate::frontend::ast::{Ast, AstNode, AstType, AstValue};
 use crate::frontend::parser;
 use crate::frontend::tokens::{Literal, TokenType};
 use crate::interpreter::env::{Env, EnvRef};
-use crate::interpreter::values::{class_call, Callable, Class, UserFunction, Value};
+use crate::interpreter::values::{class_call, Callable, Class, Instance, UserFunction, Value};
+use std::cell::RefCell;
 use std::rc::Rc;
 use values::NativeFunction;
 
@@ -433,16 +434,57 @@ impl Interpreter {
 
         let instance = self.eval_ast(&children[0])?;
         if let Value::Instance(instance) = instance {
-            let field_name = Self::get_field_name(&children[2])?;
-            instance
-                .borrow()
-                .get_field(&field_name)
-                .ok_or(LoxError::new_in_eval_ctx(format!(
-                    "Unknown field {field_name}"
-                )))
+            let (member_node, is_member) = match &children[2] {
+                Ast::NonTerminal(ast_node) => match ast_node.get_type() {
+                    AstType::VarRef => (ast_node, true),
+                    AstType::Call => (ast_node, false),
+                    _ => return Self::error("invalid instance member access"),
+                },
+                _ => return Self::error("invalid instance member access"),
+            };
+
+            if is_member {
+                let member_name = Self::get_field_name(&children[2])?;
+                instance
+                    .borrow()
+                    .get_member(&member_name)
+                    .ok_or(LoxError::new_in_eval_ctx(format!(
+                        "Unknown member {member_name}"
+                    )))
+            } else {
+                self.eval_method_call(instance.clone(), member_node)
+            }
         } else {
             Self::error("invalid instance")
         }
+    }
+
+    fn eval_method_call(
+        &self,
+        instance: Rc<RefCell<Instance>>,
+        method_call_node: &AstNode,
+    ) -> InterpreterResult {
+        let children = method_call_node.get_children();
+
+        let method_name = match &children[0] {
+            Ast::NonTerminal(ast_node) => match ast_node.get_type() {
+                AstType::VarRef => {
+                    match ast_node.get_value_str() {
+                        Some(name) => name,
+                        None => return Self::error("invalid method call"),
+                    }
+                }
+                _ => return Self::error("invalid method call"),
+            },
+            _ => return Self::error("invalid method call"),
+        };
+
+        let mut args = vec![];
+        for child in children.iter().skip(1) {
+            args.push(self.eval_ast(child)?);
+        }
+
+        instance.borrow().call_method(&method_name, args)
     }
 
     fn eval_assignment(&self, assign_node: &AstNode) -> InterpreterResult {
@@ -809,6 +851,22 @@ mod tests {
             foo.bar = 42;
 
             print foo.bar;
+        "#;
+        let result = interpreter.run(code.to_string());
+        assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
+    }
+
+    #[test]
+    fn eval_method_call() {
+        let interpreter = Interpreter::new();
+        let code = r#"
+            class Robot {
+                beep() {
+                    print "beep";
+                }
+            }
+            var robot = Robot();
+            robot.beep();
         "#;
         let result = interpreter.run(code.to_string());
         assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
