@@ -46,6 +46,13 @@ impl Interpreter {
         }
     }
 
+    pub fn copy(&self) -> Interpreter {
+        let env = self.env.borrow().clone();
+        Interpreter {
+            env: Rc::new(RefCell::new(env)),
+        }
+    }
+
     pub fn run(&self, code: String) -> Result<(), LoxError> {
         let ast = parser::parse_program(&code)?;
         self.eval_ast(&ast).map(|_| {})
@@ -466,25 +473,30 @@ impl Interpreter {
     ) -> InterpreterResult {
         let children = method_call_node.get_children();
 
-        let method_name = match &children[0] {
-            Ast::NonTerminal(ast_node) => match ast_node.get_type() {
-                AstType::VarRef => {
-                    match ast_node.get_value_str() {
-                        Some(name) => name,
-                        None => return Self::error("invalid method call"),
-                    }
-                }
-                _ => return Self::error("invalid method call"),
-            },
-            _ => return Self::error("invalid method call"),
-        };
-
         let mut args = vec![];
         for child in children.iter().skip(1) {
             args.push(self.eval_ast(child)?);
         }
 
-        instance.borrow().call_method(&method_name, args)
+        match &children[0] {
+            Ast::NonTerminal(ast_node) => match ast_node.get_type() {
+                AstType::VarRef => {
+                    match ast_node.get_value_str() {
+                        Some(name) => instance.borrow().call_method(&name, args),
+                        None => Self::error("invalid method call"),
+                    }
+                }
+                AstType::Call => {
+                    let func = self.eval_method_call(instance.clone(), ast_node)?;
+                    match func {
+                        Value::UserFunc(user_func) => user_func.call(args),
+                        _ => Self::error("invalid method call"),
+                    }
+                }
+                _ => Self::error("invalid method call"),
+            },
+            _ => Self::error("invalid method call"),
+        }
     }
 
     fn eval_assignment(&self, assign_node: &AstNode) -> InterpreterResult {
@@ -871,4 +883,57 @@ mod tests {
         let result = interpreter.run(code.to_string());
         assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
     }
+
+    #[test]
+    fn eval_this() {
+        let interpreter = Interpreter::new();
+        let code = r#"
+            class Animal {
+                makeSound() {
+                    print this.sound;
+                }
+                identify() {
+                    print "I am a " + this.type;
+                }
+            }
+            var dog = Animal();
+            dog.sound = "bark";
+            dog.type = "dog";
+
+            var cat = Animal();
+            cat.sound = "meow";
+            cat.type = "cat";
+
+            cat.makeSound = dog.makeSound;
+            dog.identify = cat.identify;
+
+            cat.makeSound();
+            dog.identify();
+        "#;
+        let result = interpreter.run(code.to_string());
+        assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
+    }
+
+    #[test]
+    fn eval_higher_order() {
+        let interpreter = Interpreter::new();
+        let code = r#"
+            class GreeterFactory {
+                makeGreeter() {
+                    fun greeter() {
+                        print "Hello, " + this.name + "!";
+                    }
+                    return greeter;
+                }
+            }
+
+            var greeterFactory = GreeterFactory();
+            greeterFactory.name = "Thomas";
+
+            greeterFactory.makeGreeter()();
+        "#;
+        let result = interpreter.run(code.to_string());
+        assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
+    }
+
 }

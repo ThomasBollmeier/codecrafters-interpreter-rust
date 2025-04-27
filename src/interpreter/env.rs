@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
+#[derive(Clone)]
 pub struct Env {
     parent: Option<EnvRef>,
     values: HashMap<String, Value>,

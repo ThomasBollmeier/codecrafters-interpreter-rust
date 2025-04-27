@@ -76,6 +76,19 @@ impl UserFunction {
             body,
         }
     }
+    
+    pub fn bind(&self, instance: Rc<RefCell<Instance>>) -> UserFunction {
+        let interpreter = self.interpreter.copy();
+        let env = interpreter.get_env();
+        env.borrow_mut().set_value("this".to_string(), Value::Instance(instance));
+        
+        UserFunction {
+            interpreter: Rc::new(interpreter),
+            name: self.name.clone(),
+            params: self.params.clone(),
+            body: self.body.clone(),
+        }
+    }
 
     pub fn get_name(&self) -> &str {
         &self.name
@@ -174,7 +187,8 @@ impl Instance {
         match self.fields.get(name) {
             Some(value) => Some(value.clone()),
             None => {
-                if let Some(method) = self.class.get_method(name) {
+                if let Some(func) = self.class.get_method(name) {
+                    let method = func.bind(Rc::new(RefCell::new(self.clone())));
                     return Some(Value::UserFunc(method.clone()));
                 }
                 None
@@ -183,9 +197,14 @@ impl Instance {
     }
 
     pub fn call_method(&self, name: &str, args: Vec<Value>) -> InterpreterResult {
-        let method = self.class
-            .get_method(name)
-            .ok_or(LoxError::new_in_eval_ctx(format!("unknown method {}", name)))?;
+        let method = self
+            .get_member(name)
+            .ok_or(LoxError::new_in_eval_ctx(format!("unknown member {}", name)))?;
+        
+        let method = match method {
+            Value::UserFunc(func) => func,
+            _ => return Interpreter::error("only functions can be called"),
+        };
 
         method.call(args)
     }

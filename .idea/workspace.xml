@@ -13,7 +13,9 @@
   <component name="ChangeListManager">
     <list default="true" id="466bbc04-bf74-4b41-a4de-6f2fe95a228f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/frontend/parser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/frontend/parser.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/interpreter.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/interpreter/env.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter/env.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/interpreter/values.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/interpreter/values.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -74,6 +76,7 @@
     "Cargo.Test interpreter::tests::eval_counter.executor": "Run",
     "Cargo.Test interpreter::tests::eval_for_stmt.executor": "Run",
     "Cargo.Test interpreter::tests::eval_group.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_higher_order.executor": "Run",
     "Cargo.Test interpreter::tests::eval_method_call.executor": "Run",
     "Cargo.Test interpreter::tests::eval_negative.executor": "Run",
     "Cargo.Test interpreter::tests::eval_nil.executor": "Run",
@@ -82,6 +85,7 @@
     "Cargo.Test interpreter::tests::eval_return_stmt.executor": "Run",
     "Cargo.Test interpreter::tests::eval_set_field.executor": "Run",
     "Cargo.Test interpreter::tests::eval_str.executor": "Run",
+    "Cargo.Test interpreter::tests::eval_this.executor": "Run",
     "Cargo.Test stream::tests.executor": "Run",
     "Cargo.clean.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
@@ -115,7 +119,7 @@
     <option name="runOnTheFly" value="true" />
     <option name="tool" value="Clippy" />
   </component>
-  <component name="RunManager" selected="Cargo.Test interpreter::tests::eval_method_call">
+  <component name="RunManager" selected="Cargo.All Tests">
     <configuration name="All Tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
       <option name="command" value="test" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -168,25 +172,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test frontend::parser::tests::field_setter" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::field_setter -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <envs />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test frontend::parser::tests::param_resolution" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package codecrafters-interpreter --lib frontend::parser::tests::param_resolution -- --exact" />
+    <configuration name="Test interpreter::tests::eval_higher_order" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib interpreter::tests::eval_higher_order -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
       <option name="emulateTerminal" value="true" />
@@ -236,22 +223,39 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Test interpreter::tests::eval_this" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package codecrafters-interpreter --lib interpreter::tests::eval_this -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="Cargo.Run codecrafters-interpreter" />
       <item itemvalue="Cargo.Test codecrafters-interpreter" />
+      <item itemvalue="Cargo.Test interpreter::tests::eval_higher_order" />
+      <item itemvalue="Cargo.Test interpreter::tests::eval_this" />
       <item itemvalue="Cargo.Test interpreter::tests::eval_method_call" />
-      <item itemvalue="Cargo.Test frontend::parser::tests::field_setter" />
       <item itemvalue="Cargo.Test interpreter::tests::eval_set_field" />
-      <item itemvalue="Cargo.Test frontend::parser::tests::param_resolution" />
       <item itemvalue="Cargo.All Tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Cargo.Test interpreter::tests::eval_method_call" />
         <item itemvalue="Cargo.All Tests" />
+        <item itemvalue="Cargo.Test interpreter::tests::eval_higher_order" />
+        <item itemvalue="Cargo.Test interpreter::tests::eval_this" />
+        <item itemvalue="Cargo.Test interpreter::tests::eval_method_call" />
         <item itemvalue="Cargo.Test interpreter::tests::eval_set_field" />
-        <item itemvalue="Cargo.Test frontend::parser::tests::field_setter" />
-        <item itemvalue="Cargo.Test frontend::parser::tests::param_resolution" />
       </list>
     </recent_temporary>
   </component>
@@ -313,6 +317,9 @@
       <workItem from="1745656592267" duration="469000" />
       <workItem from="1745657158721" duration="5087000" />
       <workItem from="1745662852799" duration="5638000" />
+      <workItem from="1745669301965" duration="3502000" />
+      <workItem from="1745701080924" duration="1170000" />
+      <workItem from="1745778258360" duration="3303000" />
     </task>
     <servers />
   </component>
