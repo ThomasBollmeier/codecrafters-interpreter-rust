@@ -10,6 +10,7 @@ pub struct VarResolver {
     error: Option<LoxError>,
     var_name_in_decl: Option<String>,
     fun_nesting_level: i32,
+    in_class_context: bool,
 }
 
 impl VarResolver {
@@ -19,6 +20,7 @@ impl VarResolver {
             error: None,
             var_name_in_decl: None,
             fun_nesting_level: 0,
+            in_class_context: false,
         }
     }
 
@@ -48,6 +50,9 @@ impl AstVisitorMut for VarResolver {
                 match node.get_type() {
                     AstType::Block | AstType::ForStmt => {
                         self.enter_scope(false);
+                    }
+                    AstType::ClassDecl => {
+                        self.in_class_context = true;
                     }
                     AstType::FunDecl => {
                         if let Some(fun_name) = node.get_value_str() {
@@ -99,6 +104,9 @@ impl AstVisitorMut for VarResolver {
                                 }
                                 _ => {}
                             }
+                            if name == "this" && !self.in_class_context {
+                                self.set_error("Cannot use 'this' outside of class");
+                            }
                             if self.error.is_none() {
                                 if let Some(level) = self.scope.borrow().get_var_scope_level(name) {
                                     node.set_attr_int("scope_level".to_string(), level as i32);
@@ -131,6 +139,9 @@ impl AstVisitorMut for VarResolver {
                 match node.get_type() {
                     AstType::Block | AstType::ForStmt => {
                         self.exit_scope();
+                    }
+                    AstType::ClassDecl => {
+                        self.in_class_context = false;
                     }
                     AstType::FunDecl => {
                         self.exit_scope();
