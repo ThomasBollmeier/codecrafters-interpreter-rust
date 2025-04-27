@@ -10,6 +10,7 @@ pub struct VarResolver {
     error: Option<LoxError>,
     var_name_in_decl: Option<String>,
     fun_nesting_level: i32,
+    current_fun_name: Option<String>,
     in_class_context: bool,
 }
 
@@ -20,6 +21,7 @@ impl VarResolver {
             error: None,
             var_name_in_decl: None,
             fun_nesting_level: 0,
+            current_fun_name: None,
             in_class_context: false,
         }
     }
@@ -30,7 +32,10 @@ impl VarResolver {
     }
 
     fn enter_scope(&mut self, is_param_scope: bool) {
-        self.scope = Rc::new(RefCell::new(Scope::new_child(self.scope.clone(), is_param_scope)));
+        self.scope = Rc::new(RefCell::new(Scope::new_child(
+            self.scope.clone(),
+            is_param_scope,
+        )));
     }
 
     fn exit_scope(&mut self) {
@@ -63,6 +68,7 @@ impl AstVisitorMut for VarResolver {
                         }
                         self.enter_scope(false);
                         self.enter_scope(true);
+                        self.current_fun_name = Some(node.get_value_str().unwrap().clone());
                         self.fun_nesting_level += 1;
 
                         for child in node.get_children() {
@@ -87,7 +93,7 @@ impl AstVisitorMut for VarResolver {
                             if already_declared {
                                 self.set_error("Variable already declared in this scope");
                                 return;
-                            } 
+                            }
                             self.var_name_in_decl = Some(var_name.clone());
                             self.scope.borrow_mut().add_variable(var_name);
                         } else {
@@ -119,7 +125,13 @@ impl AstVisitorMut for VarResolver {
                     AstType::ReturnStmt => {
                         if self.fun_nesting_level == 0 {
                             self.set_error("Return statement outside of function");
-                            return;
+                        } else if let Some(name) = &self.current_fun_name {
+                            if name == "init"
+                                && self.in_class_context
+                                && !node.get_children().is_empty()
+                            {
+                                self.set_error("Cannot return a value from initializer");
+                            }
                         }
                     }
                     _ => {}
@@ -146,6 +158,7 @@ impl AstVisitorMut for VarResolver {
                     AstType::FunDecl => {
                         self.exit_scope();
                         self.exit_scope();
+                        self.current_fun_name = None;
                         self.fun_nesting_level -= 1;
                     }
                     AstType::VarDecl => self.var_name_in_decl = None,
@@ -168,7 +181,7 @@ impl Scope {
         Scope {
             parent,
             variables: HashSet::new(),
-            is_param_scope
+            is_param_scope,
         }
     }
 
@@ -196,7 +209,7 @@ impl Scope {
             Some(parent) => {
                 let p = parent.borrow();
                 p.is_param_scope && p.variables.contains(name)
-            },
+            }
             None => false,
         }
     }
