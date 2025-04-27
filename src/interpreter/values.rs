@@ -160,9 +160,13 @@ impl Class {
     }
 }
 
-pub fn class_call(class: Rc<Class>, _args: Vec<Value>) -> InterpreterResult {
-    let instance = Instance::new(class.clone());
-    Ok(Value::Instance(Rc::new(RefCell::new(instance))))
+pub fn class_call(class: Rc<Class>, args: Vec<Value>) -> InterpreterResult {
+    let instance = Rc::new(RefCell::new(Instance::new(class.clone())));
+    if let Some(init_method) = class.get_method("init") {
+        let method = init_method.bind(Rc::clone(&instance));
+        method.call(args)?;
+    }
+    Ok(Value::Instance(instance))
 }
 
 #[derive(Clone)]
@@ -170,6 +174,8 @@ pub struct Instance {
     class: Rc<Class>,
     fields: HashMap<String, Value>,
 }
+
+pub type InstanceRef = Rc<RefCell<Instance>>;
 
 impl Instance {
     pub fn new(class: Rc<Class>) -> Instance {
@@ -183,12 +189,12 @@ impl Instance {
         self.fields.insert(name, value);
     }
 
-    pub fn get_member(&self, name: &str) -> Option<Value> {
-        match self.fields.get(name) {
+    pub fn get_member(instance_ref: InstanceRef, name: &str) -> Option<Value> {
+        match instance_ref.borrow().fields.get(name) {
             Some(value) => Some(value.clone()),
             None => {
-                if let Some(func) = self.class.get_method(name) {
-                    let method = func.bind(Rc::new(RefCell::new(self.clone())));
+                if let Some(func) = instance_ref.borrow().class.get_method(name) {
+                    let method = func.bind(Rc::clone(&instance_ref));
                     return Some(Value::UserFunc(method.clone()));
                 }
                 None
@@ -196,9 +202,8 @@ impl Instance {
         }
     }
 
-    pub fn call_method(&self, name: &str, args: Vec<Value>) -> InterpreterResult {
-        let method = self
-            .get_member(name)
+    pub fn call_method(instance_ref: InstanceRef, name: &str, args: Vec<Value>) -> InterpreterResult {
+        let method = Self::get_member(instance_ref, name)
             .ok_or(LoxError::new_in_eval_ctx(format!("unknown member {}", name)))?;
         
         let method = match method {

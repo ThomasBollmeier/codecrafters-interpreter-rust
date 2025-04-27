@@ -452,9 +452,7 @@ impl Interpreter {
 
             if is_member {
                 let member_name = Self::get_field_name(&children[2])?;
-                instance
-                    .borrow()
-                    .get_member(&member_name)
+                Instance::get_member(instance, &member_name)
                     .ok_or(LoxError::new_in_eval_ctx(format!(
                         "Unknown member {member_name}"
                     )))
@@ -482,7 +480,15 @@ impl Interpreter {
             Ast::NonTerminal(ast_node) => match ast_node.get_type() {
                 AstType::VarRef => {
                     match ast_node.get_value_str() {
-                        Some(name) => instance.borrow().call_method(&name, args),
+                        Some(name) => {
+                            if name != "init" {
+                                Instance::call_method(instance, &name, args)
+                            } else {
+                                // special handling of init method: it returns implicitly the instance
+                                Instance::call_method(instance.clone(), &name, args)?;
+                                Ok(Value::Instance(instance))
+                            }
+                        }
                         None => Self::error("invalid method call"),
                     }
                 }
@@ -936,4 +942,26 @@ mod tests {
         assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
     }
 
+    #[test]
+    fn eval_init() {
+        let interpreter = Interpreter::new();
+        let code = r#"
+            class Person {
+                init(name) {
+                    this.name = name;
+                }
+
+                set_name(name) {
+                    this.name = name;
+                }
+            }
+
+            var person = Person("Thomas");
+            print person.name;
+
+            print person.init("Tom").name;
+        "#;
+        let result = interpreter.run(code.to_string());
+        assert!(result.is_ok(), "{}", result.err().unwrap().get_message());
+    }
 }
