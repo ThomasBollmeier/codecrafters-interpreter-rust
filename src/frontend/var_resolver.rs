@@ -57,6 +57,13 @@ impl AstVisitorMut for VarResolver {
                         self.enter_scope(false);
                     }
                     AstType::ClassDecl => {
+                        let class_name = node.get_value_str().unwrap();
+                        if let Some(super_class_name) = node.get_attr_str("super_class") {
+                            if class_name == super_class_name {
+                                self.set_error("Class cannot inherit from itself");
+                                return;
+                            }
+                        }
                         self.in_class_context = true;
                     }
                     AstType::FunDecl => {
