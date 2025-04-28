@@ -152,13 +152,24 @@ impl Class {
         &self.methods
     }
 
-    pub fn get_method(&self, name: &str) -> Option<&UserFunction> {
-        for method in &self.methods {
-            if method.get_name() == name {
-                return Some(method);
+    pub fn get_method<'a>(
+        class: &'a Rc<Class>,
+        name: &str,
+    ) -> Option<(&'a UserFunction, Rc<Class>)> {
+        let method = class
+            .methods
+            .iter()
+            .find(|&method| method.get_name() == name);
+        match method {
+            Some(m) => Some((m, class.clone())),
+            None => {
+                if let Some(super_class) = &class.super_class {
+                    Class::get_method(super_class, name)
+                } else {
+                    None
+                }
             }
         }
-        None
     }
 
     pub fn add_method(&mut self, method: UserFunction) {
@@ -168,7 +179,7 @@ impl Class {
 
 pub fn class_call(class: Rc<Class>, args: Vec<Value>) -> InterpreterResult {
     let instance = Rc::new(RefCell::new(Instance::new(class.clone())));
-    if let Some(init_method) = class.get_method("init") {
+    if let Some((init_method, _)) = Class::get_method(&class, "init") {
         let method = init_method.bind(Rc::clone(&instance));
         method.call(args)?;
     }
@@ -199,7 +210,7 @@ impl Instance {
         match instance_ref.borrow().fields.get(name) {
             Some(value) => Some(value.clone()),
             None => {
-                if let Some(func) = instance_ref.borrow().class.get_method(name) {
+                if let Some((func, _)) = Class::get_method(&instance_ref.borrow().class, name) {
                     let method = func.bind(Rc::clone(&instance_ref));
                     return Some(Value::UserFunc(method.clone()));
                 }
