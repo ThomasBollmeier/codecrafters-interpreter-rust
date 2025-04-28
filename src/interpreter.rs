@@ -185,6 +185,21 @@ impl Interpreter {
             .get_value_str()
             .ok_or(LoxError::new_in_eval_ctx("invalid class name".to_string()))?;
 
+        let super_class = if ast_node.has_attr("super_class") {
+            let super_class_name =
+                ast_node
+                    .get_attr_str("super_class")
+                    .ok_or(LoxError::new_in_eval_ctx(
+                        "invalid super class name".to_string(),
+                    ))?;
+            Some(match self.env.borrow().get_value(&super_class_name) {
+                Some(Value::ClassDef(class)) => class,
+                _ => return Self::error("super class must be a class"),
+            })
+        } else {
+            None
+        };
+
         let mut methods = Vec::new();
         for child in ast_node.get_children() {
             if let Ast::NonTerminal(ast_node) = child {
@@ -194,7 +209,7 @@ impl Interpreter {
             }
         }
 
-        let class = Rc::new(Class::new(class_name, methods));
+        let class = Rc::new(Class::new(class_name, super_class, methods));
 
         self.env
             .borrow_mut()
@@ -452,10 +467,9 @@ impl Interpreter {
 
             if is_member {
                 let member_name = Self::get_field_name(&children[2])?;
-                Instance::get_member(instance, &member_name)
-                    .ok_or(LoxError::new_in_eval_ctx(format!(
-                        "Unknown member {member_name}"
-                    )))
+                Instance::get_member(instance, &member_name).ok_or(LoxError::new_in_eval_ctx(
+                    format!("Unknown member {member_name}"),
+                ))
             } else {
                 self.eval_method_call(instance.clone(), member_node)
             }

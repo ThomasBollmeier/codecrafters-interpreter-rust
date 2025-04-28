@@ -85,6 +85,34 @@ impl AstNode {
         self.attrs.get(key)
     }
 
+    pub fn get_attr_str(&self, key: &str) -> Option<String> {
+        match self.attrs.get(key) {
+            Some(AstValue::Str(s)) => Some(s.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn get_attr_int(&self, key: &str) -> Option<i32> {
+        match self.attrs.get(key) {
+            Some(AstValue::Int(i)) => Some(*i),
+            _ => None,
+        }
+    }
+
+    pub fn get_attr_number(&self, key: &str) -> Option<f64> {
+        match self.attrs.get(key) {
+            Some(AstValue::Number(n)) => Some(*n),
+            _ => None,
+        }
+    }
+
+    pub fn get_attr_bool(&self, key: &str) -> Option<bool> {
+        match self.attrs.get(key) {
+            Some(AstValue::Boolean(b)) => Some(*b),
+            _ => None,
+        }
+    }
+
     pub fn has_attr(&self, key: &str) -> bool {
         self.attrs.contains_key(key)
     }

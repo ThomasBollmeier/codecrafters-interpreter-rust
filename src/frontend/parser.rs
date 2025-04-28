@@ -59,7 +59,22 @@ impl Parser {
             AstType::ClassDecl,
             Some(AstValue::Str(class_name.lexeme.clone())),
         );
-        self.consume(&vec![TokenType::LeftBrace])?;
+
+        let next_token = self
+            .advance()?
+            .ok_or(Self::error("expected token, but got none"))?;
+
+        match next_token.token_type {
+            TokenType::LeftBrace => {}
+            TokenType::Less => {
+                let super_class = self.consume(&vec![TokenType::Identifier])?.lexeme;
+                class_node.set_attr_str("super_class".to_string(), &super_class);
+                self.consume(&vec![TokenType::LeftBrace])?;
+            }
+            _ => {
+                return Err(Self::error("expected '{' or '<' after class name"));
+            }
+        }
 
         loop {
             let next_token = match self.peek() {

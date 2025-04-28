@@ -1,10 +1,10 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
+use crate::common::LoxError;
 use crate::frontend::ast::{Ast, AstType};
 use crate::interpreter::{Interpreter, InterpreterResult};
+use std::cell::RefCell;
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
-use crate::common::LoxError;
 
 #[derive(Clone)]
 pub enum Value {
@@ -29,7 +29,9 @@ impl Display for Value {
             Value::NativeFunc(_) => write!(f, "<native fn>"),
             Value::UserFunc(func) => write!(f, "<fn {}>", func.get_name()),
             Value::ClassDef(class) => write!(f, "{}", class.get_name()),
-            Value::Instance(instance) => write!(f, "{} instance", instance.borrow().class.get_name()),
+            Value::Instance(instance) => {
+                write!(f, "{} instance", instance.borrow().class.get_name())
+            }
             Value::Return(value) => write!(f, "return value: {}", value),
         }
     }
@@ -76,12 +78,13 @@ impl UserFunction {
             body,
         }
     }
-    
+
     pub fn bind(&self, instance: Rc<RefCell<Instance>>) -> UserFunction {
         let interpreter = self.interpreter.copy();
         let env = interpreter.get_env();
-        env.borrow_mut().set_value("this".to_string(), Value::Instance(instance));
-        
+        env.borrow_mut()
+            .set_value("this".to_string(), Value::Instance(instance));
+
         UserFunction {
             interpreter: Rc::new(interpreter),
             name: self.name.clone(),
@@ -110,11 +113,9 @@ impl Callable for UserFunction {
         for (param, arg) in self.params.iter().zip(args) {
             env.borrow_mut().set_value(param.clone(), arg);
         }
-        
+
         let body = match &self.body.as_ref() {
-            Ast::NonTerminal(ast_node) if ast_node.get_type() == &AstType::Block => {
-                ast_node
-            }
+            Ast::NonTerminal(ast_node) if ast_node.get_type() == &AstType::Block => ast_node,
             _ => return Interpreter::error("Function body must be a block"),
         };
 
@@ -130,12 +131,17 @@ impl Callable for UserFunction {
 #[derive(Clone)]
 pub struct Class {
     name: String,
+    super_class: Option<Rc<Class>>,
     methods: Vec<UserFunction>,
 }
 
 impl Class {
-    pub fn new(name: String, methods: Vec<UserFunction>) -> Class {
-        Class { name, methods }
+    pub fn new(name: String, super_class: Option<Rc<Class>>, methods: Vec<UserFunction>) -> Class {
+        Class {
+            name,
+            super_class,
+            methods,
+        }
     }
 
     pub fn get_name(&self) -> &str {
@@ -149,7 +155,7 @@ impl Class {
     pub fn get_method(&self, name: &str) -> Option<&UserFunction> {
         for method in &self.methods {
             if method.get_name() == name {
-                return Some(method)
+                return Some(method);
             }
         }
         None
@@ -202,10 +208,15 @@ impl Instance {
         }
     }
 
-    pub fn call_method(instance_ref: InstanceRef, name: &str, args: Vec<Value>) -> InterpreterResult {
-        let method = Self::get_member(instance_ref, name)
-            .ok_or(LoxError::new_in_eval_ctx(format!("unknown member {}", name)))?;
-        
+    pub fn call_method(
+        instance_ref: InstanceRef,
+        name: &str,
+        args: Vec<Value>,
+    ) -> InterpreterResult {
+        let method = Self::get_member(instance_ref, name).ok_or(LoxError::new_in_eval_ctx(
+            format!("unknown member {}", name),
+        ))?;
+
         let method = match method {
             Value::UserFunc(func) => func,
             _ => return Interpreter::error("only functions can be called"),
