@@ -653,7 +653,8 @@ impl Parser {
             | TokenType::Number
             | TokenType::Str => Ok(Terminal(token)),
             TokenType::Identifier
-            | TokenType::This => self.var_ref(token),
+            | TokenType::This
+            | TokenType::Super => self.var_ref(token),
             TokenType::LeftParen => self.group(token),
             TokenType::Bang | TokenType::Minus => self.unary(token),
             _ => Err(Self::error("unexpected token")),

@@ -79,11 +79,20 @@ impl UserFunction {
         }
     }
 
-    pub fn bind(&self, instance: Rc<RefCell<Instance>>) -> UserFunction {
+    pub fn bind(&self, instance: Rc<RefCell<Instance>>, class: Rc<Class>) -> UserFunction {
         let interpreter = self.interpreter.copy();
         let env = interpreter.get_env();
+        
         env.borrow_mut()
-            .set_value("this".to_string(), Value::Instance(instance));
+            .set_value("this".to_string(), Value::Instance(instance.clone()));
+        
+        if let Some(super_class) = &class.super_class {
+            let super_inst = instance.borrow().super_instance(super_class.clone());
+            env.borrow_mut().set_value(
+                "super".to_string(),
+                Value::Instance(Rc::new(RefCell::new(super_inst))),
+            );
+        }
 
         UserFunction {
             interpreter: Rc::new(interpreter),
@@ -180,7 +189,7 @@ impl Class {
 pub fn class_call(class: Rc<Class>, args: Vec<Value>) -> InterpreterResult {
     let instance = Rc::new(RefCell::new(Instance::new(class.clone())));
     if let Some((init_method, _)) = Class::get_method(&class, "init") {
-        let method = init_method.bind(Rc::clone(&instance));
+        let method = init_method.bind(Rc::clone(&instance), class.clone());
         method.call(args)?;
     }
     Ok(Value::Instance(instance))
@@ -202,6 +211,13 @@ impl Instance {
         }
     }
 
+    pub fn super_instance(&self, super_class: Rc<Class>) -> Instance {
+        Instance {
+            class: super_class,
+            fields: self.fields.clone(),
+        }
+    }
+
     pub fn set_field(&mut self, name: String, value: Value) {
         self.fields.insert(name, value);
     }
@@ -210,8 +226,8 @@ impl Instance {
         match instance_ref.borrow().fields.get(name) {
             Some(value) => Some(value.clone()),
             None => {
-                if let Some((func, _)) = Class::get_method(&instance_ref.borrow().class, name) {
-                    let method = func.bind(Rc::clone(&instance_ref));
+                if let Some((func, class)) = Class::get_method(&instance_ref.borrow().class, name) {
+                    let method = func.bind(Rc::clone(&instance_ref), class);
                     return Some(Value::UserFunc(method.clone()));
                 }
                 None
