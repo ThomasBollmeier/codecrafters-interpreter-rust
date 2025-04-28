@@ -1,13 +1,13 @@
+use super::ast::AstValue;
 use crate::common::LoxError;
 use crate::frontend::ast::Ast::{NonTerminal, Terminal};
 use crate::frontend::ast::{Ast, AstNode, AstType};
 use crate::frontend::scanner::Scanner;
 use crate::frontend::stream::{BufferedStream, CharStream};
 use crate::frontend::tokens::{Token, TokenType};
+use crate::frontend::var_resolver::VarResolver;
 use std::collections::VecDeque;
 use std::vec;
-use crate::frontend::var_resolver::VarResolver;
-use super::ast::AstValue;
 
 pub struct Parser {
     token_stream: BufferedStream<Token, LoxError>,
@@ -350,7 +350,7 @@ impl Parser {
 
     fn assignment(&mut self, token: Token) -> Result<Ast, LoxError> {
         let lhs = self.disjunction(token)?;
-        
+
         let equal_token = if let Some(next_token) = self.peek() {
             if next_token.token_type == TokenType::Equal {
                 self.consume(&vec![TokenType::Equal])?
@@ -360,11 +360,11 @@ impl Parser {
         } else {
             return Ok(lhs);
         };
-        
+
         if !Self::is_valid_lhs(&lhs) {
             return Err(Self::error("invalid left-hand side in assignment"));
         }
-        
+
         let mut assign_node = AstNode::new(AstType::Assignment, None);
         assign_node.add_child(lhs);
         assign_node.add_child(Terminal(equal_token));
@@ -372,30 +372,28 @@ impl Parser {
 
         Ok(NonTerminal(assign_node))
     }
-    
+
     fn is_valid_lhs(ast: &Ast) -> bool {
-        match ast {  
+        match ast {
             Terminal(_) => false,
-            NonTerminal(node) => {
-                match node.get_type() {
-                    AstType::VarRef => true,
-                    AstType::Binary => {
-                        if let Some(value) = node.get_value_str() {
-                            if value != "."{
-                                return false;
-                            }
-                            let children = node.get_children();
-                            if let Some(NonTerminal(child)) = children.get(2) {
-                                if child.get_type() == &AstType::VarRef {
-                                    return true;
-                                }
+            NonTerminal(node) => match node.get_type() {
+                AstType::VarRef => true,
+                AstType::Binary => {
+                    if let Some(value) = node.get_value_str() {
+                        if value != "." {
+                            return false;
+                        }
+                        let children = node.get_children();
+                        if let Some(NonTerminal(child)) = children.get(2) {
+                            if child.get_type() == &AstType::VarRef {
+                                return true;
                             }
                         }
-                        false
                     }
-                    _ => false,
+                    false
                 }
-            }
+                _ => false,
+            },
         }
     }
 
@@ -646,6 +644,8 @@ impl Parser {
     }
 
     fn atom(&mut self, token: Token) -> Result<Ast, LoxError> {
+        let next_token = self.peek();
+
         let expr = match token.token_type {
             TokenType::True
             | TokenType::False
@@ -653,8 +653,14 @@ impl Parser {
             | TokenType::Number
             | TokenType::Str => Ok(Terminal(token)),
             TokenType::Identifier
-            | TokenType::This
-            | TokenType::Super => self.var_ref(token),
+            | TokenType::This => self.var_ref(token),
+            TokenType::Super => match next_token {
+                Some(tok) if tok.token_type == TokenType::Dot => self.var_ref(token),
+                None => self.var_ref(token),
+                _ => Err(Self::error(
+                    "'this' and 'super' can only be followed by '.'",
+                )),
+            },
             TokenType::LeftParen => self.group(token),
             TokenType::Bang | TokenType::Minus => self.unary(token),
             _ => Err(Self::error("unexpected token")),
@@ -908,7 +914,7 @@ mod tests {
 
         assert!(result.is_ok());
     }
-    
+
     #[test]
     fn param_resolution() {
         let code = r#"
@@ -935,5 +941,23 @@ mod tests {
         let result = parse_program(code);
 
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn super_without_super_class() {
+        let code = r#"
+        class Foo < Bar {
+            bar() {
+                (super).bar();
+            }
+        }
+        "#;
+
+        let result = parse_program(code);
+        assert!(result.is_err());
+        assert_eq!(
+            format!("{}", result.err().unwrap()),
+            "'super' can only be followed by '.'"
+        );
     }
 }

@@ -12,6 +12,7 @@ pub struct VarResolver {
     fun_nesting_level: i32,
     current_fun_name: Option<String>,
     in_class_context: bool,
+    has_super_class: bool,
 }
 
 impl VarResolver {
@@ -23,6 +24,7 @@ impl VarResolver {
             fun_nesting_level: 0,
             current_fun_name: None,
             in_class_context: false,
+            has_super_class: false,
         }
     }
 
@@ -63,6 +65,7 @@ impl AstVisitorMut for VarResolver {
                                 self.set_error("Class cannot inherit from itself");
                                 return;
                             }
+                            self.has_super_class = true;
                         }
                         self.in_class_context = true;
                     }
@@ -119,6 +122,8 @@ impl AstVisitorMut for VarResolver {
                             }
                             if name == "this" && !self.in_class_context {
                                 self.set_error("Cannot use 'this' outside of class");
+                            } else if name == "super" && !self.has_super_class {
+                                self.set_error("Cannot use 'super' in a class with no superclass");
                             }
                             if self.error.is_none() {
                                 if let Some(level) = self.scope.borrow().get_var_scope_level(name) {
@@ -161,6 +166,7 @@ impl AstVisitorMut for VarResolver {
                     }
                     AstType::ClassDecl => {
                         self.in_class_context = false;
+                        self.has_super_class = false;
                     }
                     AstType::FunDecl => {
                         self.exit_scope();
