@@ -658,7 +658,7 @@ impl Parser {
                 Some(tok) if tok.token_type == TokenType::Dot => self.var_ref(token),
                 None => self.var_ref(token),
                 _ => Err(Self::error(
-                    "'this' and 'super' can only be followed by '.'",
+                    "'super' can only be followed by '.'",
                 )),
             },
             TokenType::LeftParen => self.group(token),
